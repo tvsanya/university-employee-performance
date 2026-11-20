@@ -22,6 +22,11 @@ def main(argv=None):
     split.add_argument("--validation-fraction", type=float, default=0.15)
     check_spec = commands.add_parser("check-spec", help="Проверить описание задачи и признаки")
     check_spec.add_argument("--config", required=True, type=Path)
+    baseline = commands.add_parser("train-baseline", help="Обучить baseline только на train и сохранить модели")
+    baseline.add_argument("--splits", required=True, type=Path)
+    baseline.add_argument("--config", required=True, type=Path)
+    baseline.add_argument("--output", required=True, type=Path)
+    baseline.add_argument("--report", type=Path)
     for command in [inspect, validate, split, check_spec]:
         command.add_argument("source", help="HTTP/HTTPS-ссылка или локальный CSV")
         command.add_argument("--member", help="Имя CSV внутри ZIP-архива")
@@ -31,18 +36,23 @@ def main(argv=None):
             command.add_argument("--target", required=command is not inspect, help="Название целевой колонки")
     args = parser.parse_args(argv)
     try:
-        dataset = load_dataset(args.source, args.member, args.delimiter)
-        if args.command == "check-spec":
-            config = ExperimentConfig.from_file(args.config)
-            config.check_columns(dataset)
-            report = validate_dataset(dataset, config.target)
-            report["experiment"] = config.as_dict()
+        if args.command == "train-baseline":
+            # Зависимости обучения не требуются для обычного inspect.
+            from .baselines import run_baseline_experiment
+            report = run_baseline_experiment(args.splits, ExperimentConfig.from_file(args.config), args.output)
         else:
-            report = profile_dataset(dataset, args.target) if args.command == "inspect" else validate_dataset(dataset, args.target)
-        if args.command == "split" and report["ok"]:
-            result = split_dataset(dataset, seed=args.seed, train_fraction=args.train_fraction,
-                                   validation_fraction=args.validation_fraction, group_column=args.group_column)
-            report["split"] = write_splits(dataset, result, args.output, target=args.target)
+            dataset = load_dataset(args.source, args.member, args.delimiter)
+            if args.command == "check-spec":
+                config = ExperimentConfig.from_file(args.config)
+                config.check_columns(dataset)
+                report = validate_dataset(dataset, config.target)
+                report["experiment"] = config.as_dict()
+            else:
+                report = profile_dataset(dataset, args.target) if args.command == "inspect" else validate_dataset(dataset, args.target)
+            if args.command == "split" and report["ok"]:
+                result = split_dataset(dataset, seed=args.seed, train_fraction=args.train_fraction,
+                                       validation_fraction=args.validation_fraction, group_column=args.group_column)
+                report["split"] = write_splits(dataset, result, args.output, target=args.target)
         serialized = json.dumps(report, ensure_ascii=False, indent=2) + "\n"
         if args.report:
             args.report.parent.mkdir(parents=True, exist_ok=True)

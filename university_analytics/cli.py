@@ -6,6 +6,7 @@ from urllib.error import URLError
 from .data import DatasetError, load_dataset
 from .quality import profile_dataset, validate_dataset
 from .splitting import split_dataset, write_splits
+from .experiment import ExperimentConfig
 
 
 def main(argv=None):
@@ -19,16 +20,25 @@ def main(argv=None):
     split.add_argument("--group-column", help="Идентификатор сотрудника или иной независимой группы")
     split.add_argument("--train-fraction", type=float, default=0.7)
     split.add_argument("--validation-fraction", type=float, default=0.15)
-    for command in [inspect, validate, split]:
+    check_spec = commands.add_parser("check-spec", help="Проверить описание задачи и признаки")
+    check_spec.add_argument("--config", required=True, type=Path)
+    for command in [inspect, validate, split, check_spec]:
         command.add_argument("source", help="HTTP/HTTPS-ссылка или локальный CSV")
         command.add_argument("--member", help="Имя CSV внутри ZIP-архива")
         command.add_argument("--delimiter", help="Явный разделитель вместо автоопределения")
         command.add_argument("--report", type=Path, help="Сохранить сводку JSON")
-        command.add_argument("--target", required=command is not inspect, help="Название целевой колонки")
+        if command is not check_spec:
+            command.add_argument("--target", required=command is not inspect, help="Название целевой колонки")
     args = parser.parse_args(argv)
     try:
         dataset = load_dataset(args.source, args.member, args.delimiter)
-        report = profile_dataset(dataset, args.target) if args.command == "inspect" else validate_dataset(dataset, args.target)
+        if args.command == "check-spec":
+            config = ExperimentConfig.from_file(args.config)
+            config.check_columns(dataset)
+            report = validate_dataset(dataset, config.target)
+            report["experiment"] = config.as_dict()
+        else:
+            report = profile_dataset(dataset, args.target) if args.command == "inspect" else validate_dataset(dataset, args.target)
         if args.command == "split" and report["ok"]:
             result = split_dataset(dataset, seed=args.seed, train_fraction=args.train_fraction,
                                    validation_fraction=args.validation_fraction, group_column=args.group_column)

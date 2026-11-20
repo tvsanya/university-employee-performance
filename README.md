@@ -9,12 +9,19 @@
 
 ## Запуск
 
-Python 3.12+; первый этап не требует сторонних библиотек.
+Python 3.12+. Для подготовки признаков установите зависимости с зафиксированными версиями:
+
+```sh
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+```
 
 ```sh
 python3 main.py inspect https://example.org/dataset.csv --report .local/profile.json
 python3 main.py inspect data.csv
 python3 main.py validate data.csv --target score --report .local/validation.json
+python3 main.py check-spec data.csv --config .local/experiment.json
 python3 main.py split data.csv --target score --group-column employee_id --output .local/split-v1 --seed 42
 python3 main.py inspect https://example.org/dataset.zip --member data.csv
 python3 -m unittest discover -v
@@ -31,3 +38,5 @@ python3 -m unittest discover -v
 ```sh
 python3 main.py inspect 'https://archive.ics.uci.edu/static/public/262/turkiye%2Bstudent%2Bevaluation.zip' --member turkiye-student-evaluation_generic.csv --report .local/uci-candidate.json
 ```
+
+Контракт задачи и правила подготовки признаков описаны в `docs/MODELING.md`. Медианы, масштаб и словарь категорий оцениваются на train; неизвестные категории при применении не расширяют словарь. Целевой столбец, идентификатор группы и явно исключённые поля не входят в признаки.

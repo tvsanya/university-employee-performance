@@ -24,7 +24,7 @@ class ExperimentConfig:
 
     @property
     def features(self):
-        return self.numeric_features + self.categorical_features
+        return tuple(self.numeric_features) + tuple(self.categorical_features)
 
     def validate(self):
         if self.task not in {"classification", "regression"}:

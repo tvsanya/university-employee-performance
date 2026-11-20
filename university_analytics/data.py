@@ -46,7 +46,7 @@ def read_source(source: str) -> bytes:
     return payload
 
 
-def load_dataset(source: str, member: str | None = None) -> Dataset:
+def load_dataset(source: str, member: str | None = None, delimiter: str | None = None) -> Dataset:
     payload = read_source(source)
     if member:
         try:
@@ -66,7 +66,14 @@ def load_dataset(source: str, member: str | None = None) -> Dataset:
     except UnicodeDecodeError as exc:
         raise DatasetError("CSV должен быть в кодировке UTF-8.") from exc
     try:
-        records = list(csv.reader(io.StringIO(text), strict=True))
+        if delimiter is None:
+            try:
+                delimiter = csv.Sniffer().sniff(text[:8192], delimiters=",;\t|").delimiter
+            except csv.Error:
+                delimiter = ","
+        if delimiter not in {",", ";", "\t", "|"}:
+            raise DatasetError("Разделитель должен быть запятой, точкой с запятой, табуляцией или |.")
+        records = list(csv.reader(io.StringIO(text), delimiter=delimiter, strict=True))
     except csv.Error as exc:
         raise DatasetError("Не удалось разобрать CSV.") from exc
     records = [row for row in records if row]

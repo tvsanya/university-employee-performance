@@ -1,0 +1,62 @@
+{
+  "task": "classification",
+  "target_description": "Синтетическая категория скрытого фактора симулятора; не реальная оценка сотрудника",
+  "selection_partition": "validation",
+  "selection_metric": "macro_f1",
+  "selected_model": "linear",
+  "metrics": {
+    "dummy": {
+      "train": {
+        "accuracy": 0.589047619047619,
+        "macro_f1": 0.24712815902507243
+      },
+      "validation": {
+        "accuracy": 0.5488888888888889,
+        "macro_f1": 0.23625059780009564
+      },
+      "test": {
+        "accuracy": 0.5888888888888889,
+        "macro_f1": 0.24708624708624707
+      }
+    },
+    "linear": {
+      "train": {
+        "accuracy": 0.7633333333333333,
+        "macro_f1": 0.7542628136149666
+      },
+      "validation": {
+        "accuracy": 0.8022222222222222,
+        "macro_f1": 0.7976393285100158
+      },
+      "test": {
+        "accuracy": 0.76,
+        "macro_f1": 0.7470509302405853
+      }
+    }
+  },
+  "rows": {
+    "train": 2100,
+    "validation": 450,
+    "test": 450
+  },
+  "source_sha256": "698dbfc7709f492a58f8ee1dcba83d8355173ad0ebd0ae8d257e49c5dd1e75af",
+  "data_origin": "synthetic",
+  "intended_use": "development_demo_only",
+  "split_manifest_sha256": "7ac643421eb3b8b655b1f7344b5e1687960e62005cb3c00f83d878ccaebff45e",
+  "versions": {
+    "numpy": "2.5.5",
+    "scikit-learn": "1.9.1",
+    "joblib": "1.6.0",
+    "scipy": "1.18.1"
+  },
+  "artifacts": {
+    "dummy": {
+      "file": "model1.joblib",
+      "sha256": "ce8a68b5aab676873232914aa2a6b307ed195c179922e499772a495b18239b19"
+    },
+    "linear": {
+      "file": "model2.joblib",
+      "sha256": "ccf54f0218106b60390cca3eb7d443e7691e0750b8f055e2fd71796bba135d74"
+    }
+  }
+}

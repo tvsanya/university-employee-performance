@@ -27,6 +27,12 @@ def main(argv=None):
     baseline.add_argument("--config", required=True, type=Path)
     baseline.add_argument("--output", required=True, type=Path)
     baseline.add_argument("--report", type=Path)
+    demo = commands.add_parser("generate-demo", help="Создать явно помеченную симуляцию для разработки")
+    demo.add_argument("--output", required=True, type=Path)
+    demo.add_argument("--employees", type=int, default=1500)
+    demo.add_argument("--periods", type=int, default=2)
+    demo.add_argument("--seed", type=int, default=42)
+    demo.add_argument("--report", type=Path)
     for command in [inspect, validate, split, check_spec]:
         command.add_argument("source", help="HTTP/HTTPS-ссылка или локальный CSV")
         command.add_argument("--member", help="Имя CSV внутри ZIP-архива")
@@ -36,7 +42,10 @@ def main(argv=None):
             command.add_argument("--target", required=command is not inspect, help="Название целевой колонки")
     args = parser.parse_args(argv)
     try:
-        if args.command == "train-baseline":
+        if args.command == "generate-demo":
+            from .simulation import generate_demo
+            report = generate_demo(args.output, employees=args.employees, periods=args.periods, seed=args.seed)
+        elif args.command == "train-baseline":
             # Зависимости обучения не требуются для обычного inspect.
             from .baselines import run_baseline_experiment
             report = run_baseline_experiment(args.splits, ExperimentConfig.from_file(args.config), args.output)

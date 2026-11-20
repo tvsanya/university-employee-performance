@@ -21,6 +21,7 @@ class Dataset:
     rows: tuple[tuple[str, ...], ...]
     source: str
     sha256: str
+    origin_kind: str = "unspecified"
 
 
 def read_source(source: str) -> bytes:
@@ -87,7 +88,14 @@ def load_dataset(source: str, member: str | None = None, delimiter: str | None =
         if len(row) != len(columns):
             raise DatasetError(f"Строка {number}: ожидалось {len(columns)} значений, получено {len(row)}.")
         rows.append(tuple(value.strip() for value in row))
-    return Dataset(columns, tuple(rows), source + (f"#{member}" if member else ""), hashlib.sha256(payload).hexdigest())
+    origin = "unspecified"
+    if "source_kind" in columns and rows:
+        flags = {row[columns.index("source_kind")] for row in rows}
+        if flags == {"synthetic"}:
+            origin = "synthetic"
+        elif "synthetic" in flags:
+            origin = "mixed"
+    return Dataset(columns, tuple(rows), source + (f"#{member}" if member else ""), hashlib.sha256(payload).hexdigest(), origin)
 
 
 def basic_profile(dataset: Dataset) -> dict:
@@ -95,4 +103,5 @@ def basic_profile(dataset: Dataset) -> dict:
         "source": dataset.source, "sha256": dataset.sha256,
         "row_count": len(dataset.rows), "column_count": len(dataset.columns),
         "columns": list(dataset.columns),
+        "data_origin": dataset.origin_kind,
     }

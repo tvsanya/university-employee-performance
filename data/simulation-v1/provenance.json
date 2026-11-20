@@ -1,0 +1,12 @@
+{
+  "data_origin": "synthetic",
+  "intended_use": "development_demo_only",
+  "generator": "university-demo-v1",
+  "seed": 42,
+  "employees": 1500,
+  "periods": 2,
+  "rows": 3000,
+  "columns": 16,
+  "sha256": "698dbfc7709f492a58f8ee1dcba83d8355173ad0ebd0ae8d257e49c5dd1e75af",
+  "limitations": "Искусственные зависимости проверяют код; метрики не доказывают качество оценки реальных сотрудников."
+}

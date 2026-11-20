@@ -1,4 +1,9 @@
-"""Сравнение простого и линейного baseline без обучения на heldout-данных."""
+"""Бакулин Александр Максимович.
+
+Автоматизация процессов оценки эффективности работы сотрудника университета
+с применением интеллектуального анализа данных.
+Сравнение простого и линейного baseline без обучения на heldout-данных.
+"""
 import hashlib
 import json
 import math
@@ -37,6 +42,8 @@ def load_split_bundle(directory: Path, config: ExperimentConfig):
             raise DatasetError(f"Контрольная сумма или размер {name} не совпадают с манифестом.")
         if not data.rows:
             raise DatasetError(f"Выборка {name} пуста.")
+        if data.origin_kind != manifest.get("data_origin", "unspecified"):
+            raise DatasetError("Происхождение данных не совпадает с манифестом.")
         if datasets and data.columns != datasets["train"].columns:
             raise DatasetError("Структура колонок выборок различается.")
         datasets[name] = data
@@ -105,6 +112,8 @@ def run_baseline_experiment(split_directory: Path, config: ExperimentConfig, des
     datasets, manifest = load_split_bundle(split_directory, config)
     models, report = fit_baselines(datasets, config)
     report["source_sha256"] = manifest.get("source_sha256")
+    report["data_origin"] = manifest.get("data_origin", "unspecified")
+    report["intended_use"] = "development_demo_only" if report["data_origin"] in {"synthetic", "mixed"} else "research_requires_validation"
     report["split_manifest_sha256"] = hashlib.sha256((Path(split_directory) / "manifest.json").read_bytes()).hexdigest()
     report["versions"] = {name: version(name) for name in ["numpy", "scikit-learn", "joblib", "scipy"]}
     destination.parent.mkdir(parents=True, exist_ok=True)

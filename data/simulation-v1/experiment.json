@@ -1,0 +1,27 @@
+{
+  "task": "classification",
+  "target": "efficiency_level",
+  "target_description": "Синтетическая категория скрытого фактора симулятора; не реальная оценка сотрудника",
+  "numeric_features": [
+    "employment_fraction",
+    "planned_teaching_hours",
+    "teaching_hours",
+    "student_feedback_avg",
+    "course_completion_rate",
+    "publication_count",
+    "training_hours",
+    "admin_delay_days",
+    "digital_activity_rate"
+  ],
+  "categorical_features": [
+    "department",
+    "position"
+  ],
+  "group_column": "employee_id",
+  "excluded_columns": [
+    "efficiency_score",
+    "source_kind",
+    "period_id"
+  ],
+  "seed": 42
+}

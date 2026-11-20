@@ -77,6 +77,7 @@ def write_splits(dataset: Dataset, result: SplitResult, destination: Path, *, ta
                              "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
         manifest = {
             "algorithm": "group-shuffle-v1", "source": dataset.source, "source_sha256": dataset.sha256,
+            "data_origin": dataset.origin_kind,
             "seed": result.seed, "group_column": result.group_column, "target": target,
             "non_feature_columns": [name for name in [target, result.group_column] if name],
             "requested_group_fractions": {"train": result.train_fraction, "validation": result.validation_fraction,

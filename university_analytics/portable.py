@@ -1,4 +1,4 @@
-"""Применение сохранённой MLP из JSON без десериализации Python-объектов."""
+"""Применение MLP и классификационных baseline из проверенного JSON."""
 import json
 import hashlib
 from pathlib import Path
@@ -8,6 +8,8 @@ from .experiment import ExperimentConfig
 from .preprocessing import feature_matrix
 
 FORMAT = "university-mlp-json-v1"
+LINEAR_FORMAT = "university-linear-json-v1"
+DUMMY_FORMAT = "university-dummy-json-v1"
 MAX_MODEL_BYTES = 16 * 1024 * 1024
 
 
@@ -23,17 +25,22 @@ def vector(values, size, name):
     return result
 
 
-def export_network(model, config, data_origin="unspecified"):
-    preprocess, classifier = model.named_steps["preprocess"], model.named_steps["model"]
+def preprocessing_payload(model, config, data_origin):
+    preprocess = model.named_steps["preprocess"]
     numeric = preprocess.named_transformers_.get("numeric")
     categorical = preprocess.named_transformers_.get("categorical")
-    payload = {"format": FORMAT, "config": config.as_dict(), "data_origin": data_origin,
+    return {"config": config.as_dict(), "data_origin": data_origin,
         "intended_use": "development_demo_only" if data_origin in {"synthetic", "mixed"} else "research_requires_validation",
         "numeric": {"impute": numeric.named_steps["impute"].statistics_.tolist() if numeric else [],
             "mean": numeric.named_steps["scale"].mean_.tolist() if numeric else [],
             "scale": numeric.named_steps["scale"].scale_.tolist() if numeric else []},
         "categorical": {"categories": [item.tolist() for item in categorical.named_steps["encode"].categories_] if categorical else [],
-            "missing_value": "__MISSING__"},
+            "missing_value": "__MISSING__"}}
+
+
+def export_network(model, config, data_origin="unspecified"):
+    classifier = model.named_steps["model"]
+    payload = {**preprocessing_payload(model, config, data_origin), "format": FORMAT,
         "network": {"weights": [item.tolist() for item in classifier.coefs_],
             "biases": [item.tolist() for item in classifier.intercepts_], "activation": classifier.activation,
             "output_activation": classifier.out_activation_, "classes": classifier.classes_.tolist()}}
@@ -41,10 +48,33 @@ def export_network(model, config, data_origin="unspecified"):
     return payload
 
 
+def export_baseline(model, config, data_origin="unspecified"):
+    from sklearn.dummy import DummyClassifier
+    from sklearn.linear_model import LogisticRegression
+    if config.task != "classification":
+        raise DatasetError("Перенос baseline в JSON сейчас поддерживает классификацию.")
+    classifier = model.named_steps["model"]
+    classes = classifier.classes_.tolist()
+    payload = preprocessing_payload(model, config, data_origin)
+    if isinstance(classifier, LogisticRegression):
+        payload.update(format=LINEAR_FORMAT, network={"weights": [classifier.coef_.T.tolist()],
+            "biases": [classifier.intercept_.tolist()], "classes": classes, "activation": "identity",
+            "output_activation": "logistic" if len(classes) == 2 else "softmax"})
+    elif isinstance(classifier, DummyClassifier) and classifier.strategy == "most_frequent":
+        probabilities = [0.0]*len(classes)
+        probabilities[int(np.argmax(classifier.class_prior_))] = 1.0
+        payload.update(format=DUMMY_FORMAT, network={"classes": classes, "probabilities": probabilities})
+    else:
+        raise DatasetError("Неподдерживаемый тип baseline для JSON.")
+    PortableNetwork(payload)
+    return payload
+
+
 class PortableNetwork:
     def __init__(self, payload):
-        if not isinstance(payload, dict) or payload.get("format") != FORMAT:
+        if not isinstance(payload, dict) or not isinstance(payload.get("format"), str) or payload["format"] not in {FORMAT, LINEAR_FORMAT, DUMMY_FORMAT}:
             raise DatasetError("Неподдерживаемый формат JSON-модели.")
+        self.format = payload["format"]
         self.config = ExperimentConfig.from_dict(payload.get("config"))
         if self.config.task != "classification":
             raise DatasetError("JSON-модель поддерживает только классификацию.")
@@ -77,12 +107,20 @@ class PortableNetwork:
         self.classes = network.get("classes")
         if not isinstance(self.classes, list) or not 2 <= len(self.classes) <= 1000 or not all(isinstance(item, str) and item for item in self.classes) or len(set(self.classes)) != len(self.classes):
             raise DatasetError("Неверный список классов.")
+        self.constant = None
+        if self.format == DUMMY_FORMAT:
+            self.constant = vector(network.get("probabilities"), len(self.classes), "Вероятности baseline")
+            if (self.constant < 0).any() or (self.constant > 1).any() or not np.isclose(self.constant.sum(), 1, rtol=0, atol=1e-12):
+                raise DatasetError("Некорректное распределение вероятностей baseline.")
+            return
         self.activation, self.output_activation = network.get("activation"), network.get("output_activation")
         expected_output = "logistic" if len(self.classes) == 2 else "softmax"
-        if not isinstance(self.activation, str) or self.activation not in {"relu", "tanh"} or self.output_activation != expected_output:
+        allowed = {"identity"} if self.format == LINEAR_FORMAT else {"relu", "tanh"}
+        if not isinstance(self.activation, str) or self.activation not in allowed or self.output_activation != expected_output:
             raise DatasetError("Неподдерживаемая функция активации.")
         weights, biases = network.get("weights"), network.get("biases")
-        if not isinstance(weights, list) or not 3 <= len(weights) <= 5 or not isinstance(biases, list) or len(weights) != len(biases):
+        valid_layers = isinstance(weights, list) and (len(weights) == 1 if self.format == LINEAR_FORMAT else 3 <= len(weights) <= 5)
+        if not valid_layers or not isinstance(biases, list) or len(weights) != len(biases):
             raise DatasetError("Проверьте число скрытых слоёв и смещения.")
         self.weights, self.biases = [], []
         for index, (matrix, bias) in enumerate(zip(weights, biases)):
@@ -113,6 +151,8 @@ class PortableNetwork:
 
     def predict_proba(self, dataset):
         raw = feature_matrix(dataset, self.config)
+        if self.constant is not None:
+            return np.tile(self.constant, (len(dataset.rows), 1))
         numeric_count = len(self.config.numeric_features)
         numeric = raw[:, :numeric_count].astype(float)
         numeric = np.where(np.isnan(numeric), self.impute, numeric)

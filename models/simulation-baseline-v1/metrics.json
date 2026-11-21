@@ -58,5 +58,9 @@
       "file": "model2.joblib",
       "sha256": "ccf54f0218106b60390cca3eb7d443e7691e0750b8f055e2fd71796bba135d74"
     }
+  },
+  "portable_artifact": {
+    "file": "model.json",
+    "sha256": "43088d11acd7029e95dc8ad7424eb5d9a1a020c61a176f0f4524636bfcb1af4b"
   }
 }

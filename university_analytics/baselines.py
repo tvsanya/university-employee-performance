@@ -125,6 +125,11 @@ def run_baseline_experiment(split_directory: Path, config: ExperimentConfig, des
             joblib.dump(model, temporary / filename)
             artifacts[name] = {"file": filename, "sha256": hashlib.sha256((temporary / filename).read_bytes()).hexdigest()}
         report["artifacts"] = artifacts
+        if config.task == "classification":
+            from .portable import export_baseline
+            portable = export_baseline(models[report["selected_model"]], config, report["data_origin"])
+            (temporary/"model.json").write_text(json.dumps(portable, ensure_ascii=False, indent=2, allow_nan=False)+"\n", encoding="utf-8")
+            report["portable_artifact"] = {"file": "model.json", "sha256": hashlib.sha256((temporary/"model.json").read_bytes()).hexdigest()}
         (temporary / "config.json").write_text(json.dumps(config.as_dict(), ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
         (temporary / "metrics.json").write_text(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False)+"\n", encoding="utf-8")
         temporary.rename(destination)

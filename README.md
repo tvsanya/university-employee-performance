@@ -61,3 +61,11 @@ python main.py train-baseline --splits .local/simulation-splits-new --config dat
 ```
 
 Сохранённый демонстрационный запуск — models/simulation-neural-v1. Его метрики относятся к синтетическому сценарию; детали и сравнение с baseline приведены в docs/MODELING.md.
+
+Применить сеть без обучения и без pickle-десериализации:
+
+```sh
+.venv/bin/python main.py predict path/to/new.csv --model models/simulation-neural-v1/model.json --output .local/new-predictions
+```
+
+CSV должен содержать признаки из config.json; цель необязательна. В новом каталоге появятся predictions.csv и report.json. Происхождение synthetic и назначение development_demo_only сохраняются в JSON-артефакте и отчёте.

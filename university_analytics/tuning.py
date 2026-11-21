@@ -11,6 +11,7 @@ from .baselines import PARTITIONS, load_split_bundle, scores
 from .data import DatasetError
 from .neural import NetworkConfig, train_network
 from .preprocessing import feature_matrix, target_vector
+from .portable import export_network
 
 
 def load_network_grid(path, seed=42):
@@ -75,6 +76,8 @@ def run_neural_experiment(split_directory, config, candidates, destination):
     try:
         joblib.dump(model, temporary/"model3.joblib")
         report["artifacts"] = {"neural": {"file": "model3.joblib", "sha256": hashlib.sha256((temporary/"model3.joblib").read_bytes()).hexdigest()}}
+        (temporary/"model.json").write_text(json.dumps(export_network(model, config, report["data_origin"]), ensure_ascii=False, indent=2, allow_nan=False)+"\n", encoding="utf-8")
+        report["portable_artifact"] = {"file": "model.json", "sha256": hashlib.sha256((temporary/"model.json").read_bytes()).hexdigest()}
         for filename, contents in [("config.json", config.as_dict()), ("training.json", training),
                 ("grid.json", [item.as_dict() for item in candidates])]:
             (temporary/filename).write_text(json.dumps(contents, ensure_ascii=False, indent=2, allow_nan=False)+"\n", encoding="utf-8")

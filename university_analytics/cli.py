@@ -33,6 +33,11 @@ def main(argv=None):
     neural.add_argument("--grid", required=True, type=Path)
     neural.add_argument("--output", required=True, type=Path)
     neural.add_argument("--report", type=Path)
+    predict = commands.add_parser("predict", help="Применить сохранённую JSON-сеть без повторного обучения")
+    predict.add_argument("source", help="CSV с признаками, целевая колонка необязательна")
+    predict.add_argument("--model", required=True, type=Path)
+    predict.add_argument("--output", required=True, type=Path, help="Новый каталог для predictions.csv и report.json")
+    predict.add_argument("--report", type=Path)
     demo = commands.add_parser("generate-demo", help="Создать явно помеченную симуляцию для разработки")
     demo.add_argument("--output", required=True, type=Path)
     demo.add_argument("--employees", type=int, default=1500)
@@ -51,6 +56,9 @@ def main(argv=None):
         if args.command == "generate-demo":
             from .simulation import generate_demo
             report = generate_demo(args.output, employees=args.employees, periods=args.periods, seed=args.seed)
+        elif args.command == "predict":
+            from .prediction import run_prediction
+            report = run_prediction(args.model, args.source, args.output)
         elif args.command == "train-neural":
             from .tuning import load_network_grid, run_neural_experiment
             config = ExperimentConfig.from_file(args.config)

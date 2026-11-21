@@ -147,5 +147,9 @@
   "training_artifact": {
     "file": "training.json",
     "sha256": "63b5813ecadd5f2328203c79a044f4c9719aa063baed476f0b1224b7957dff0a"
+  },
+  "portable_artifact": {
+    "file": "model.json",
+    "sha256": "1c9cfee15e2aa6eff4ada43aa52eeefda6d1cef79c218a9d0f3969ae83535c33"
   }
 }

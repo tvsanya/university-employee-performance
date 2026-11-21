@@ -27,7 +27,7 @@ class ExperimentConfig:
         return tuple(self.numeric_features) + tuple(self.categorical_features)
 
     def validate(self):
-        if self.task not in {"classification", "regression"}:
+        if not isinstance(self.task, str) or self.task not in {"classification", "regression"}:
             raise DatasetError("Тип задачи: classification или regression.")
         if not isinstance(self.target, str) or not self.target.strip():
             raise DatasetError("Нужно указать целевую колонку.")

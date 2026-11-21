@@ -37,7 +37,7 @@ class NetworkConfig:
             value = getattr(self, name)
             if type(value) not in (int, float) or not math.isfinite(value) or not low <= value <= high:
                 raise DatasetError(f"Недопустимое значение {name}.")
-        if self.learning_rate == 0 or self.activation not in {"relu", "tanh"} or type(self.balanced) is not bool:
+        if self.learning_rate == 0 or not isinstance(self.activation, str) or self.activation not in {"relu", "tanh"} or type(self.balanced) is not bool:
             raise DatasetError("Проверьте learning_rate, activation и balanced.")
         return self
 

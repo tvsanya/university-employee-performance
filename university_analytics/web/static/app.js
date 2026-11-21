@@ -67,3 +67,51 @@ download.addEventListener("click", () => {
     table(document.querySelector("#experiments"), ["Модель", "Данные", "Validation macro-F1", "Test macro-F1"], rows);
   } catch (error) { document.querySelector("#experiments").textContent = error.message; }
 })();
+
+const trainingForm = document.querySelector("#training-form");
+const jobStage = document.querySelector("#job-stage");
+const jobMessage = document.querySelector("#job-message");
+let jobTimer;
+async function pollJob(id) {
+  try {
+    const response = await fetch(`/api/jobs/${id}`);
+    const job = await response.json();
+    if (!response.ok) throw new Error(job.error || "Эксперимент недоступен.");
+    jobStage.textContent = job.stage;
+    document.querySelector("#job-progress").value = job.progress;
+    if (["running", "queued"].includes(job.state)) {
+      jobMessage.textContent = "Можно продолжать работу со страницей. Статус обновляется автоматически.";
+      jobTimer = setTimeout(() => pollJob(id), 1200);
+    } else {
+      trainingForm.querySelector("button").disabled = false;
+      if (job.state === "failed") throw new Error(job.error);
+      jobMessage.textContent = `Выбрана модель ${job.result.selected_model} по validation. Данные: ${job.result.data_origin}.`;
+      const parts = ["train", "validation", "test"];
+      table(document.querySelector("#job-metrics"), ["Выборка", "Accuracy", "Macro-F1"], parts.map(name => [name, job.result.metrics[name].accuracy.toFixed(4), job.result.metrics[name].macro_f1.toFixed(4)]));
+    }
+  } catch (error) {
+    jobMessage.textContent = error.message;
+    trainingForm.querySelector("button").disabled = false;
+  }
+}
+trainingForm.addEventListener("submit", async event => {
+  event.preventDefault();
+  if (!trainingForm.reportValidity()) return;
+  clearTimeout(jobTimer);
+  trainingForm.querySelector("button").disabled = true;
+  jobMessage.textContent = "Проверка входных данных…";
+  document.querySelector("#job-metrics").replaceChildren();
+  document.querySelector("#job-artifacts").replaceChildren();
+  try {
+    const response = await fetch("/api/train", {method: "POST", body: new FormData(trainingForm), headers: {"X-CSRF-Token": document.querySelector('meta[name="csrf-token"]').content}});
+    const job = await response.json();
+    if (!response.ok) throw new Error(job.error || "Не удалось начать обучение.");
+    sessionStorage.setItem("university-job-id", job.id);
+    await pollJob(job.id);
+  } catch (error) {
+    jobMessage.textContent = error.message;
+    trainingForm.querySelector("button").disabled = false;
+  }
+});
+const previousJob = sessionStorage.getItem("university-job-id");
+if (previousJob) { trainingForm.querySelector("button").disabled = true; pollJob(previousJob); }

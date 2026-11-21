@@ -14,6 +14,7 @@ from werkzeug.exceptions import HTTPException
 from .data import DatasetError, MAX_BYTES, load_dataset
 from .prediction import run_prediction
 from .quality import profile_dataset
+from .jobs import TrainingManager, TrainingBusy, JobNotFound
 
 
 def create_app(repository=None):
@@ -22,9 +23,11 @@ def create_app(repository=None):
     web = Path(__file__).parent/"web"
     app = Flask(__name__, template_folder=str(web/"templates"), static_folder=str(web/"static"))
     app.config.update(SECRET_KEY=secrets.token_hex(32), MAX_CONTENT_LENGTH=38*1024*1024,
-        MAX_FORM_MEMORY_SIZE=65536, MAX_FORM_PARTS=10, TRUSTED_HOSTS=["127.0.0.1", "localhost"],
+        MAX_FORM_MEMORY_SIZE=512*1024, MAX_FORM_PARTS=10, TRUSTED_HOSTS=["127.0.0.1", "localhost"],
         SESSION_COOKIE_NAME="university_analytics_session", SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE="Strict")
     app.json.sort_keys = False
+    manager = TrainingManager(repository)
+    app.extensions["training_manager"] = manager
 
     @app.before_request
     def protect_local_session():
@@ -55,9 +58,18 @@ def create_app(repository=None):
     def http_error(error):
         return jsonify(error=error.description), error.code
 
+    @app.errorhandler(TrainingBusy)
+    def busy(error):
+        return jsonify(error=str(error)), 409
+
+    @app.errorhandler(JobNotFound)
+    def missing_job(error):
+        return jsonify(error="Эксперимент не найден в этой браузерной сессии."), 404
+
     @app.get("/")
     def index():
         session.setdefault("csrf", secrets.token_urlsafe(32))
+        session.setdefault("workspace_id", secrets.token_urlsafe(32))
         return render_template("index.html", csrf=session["csrf"])
 
     @app.get("/api/experiments")
@@ -135,5 +147,30 @@ def create_app(repository=None):
             contents = (root/"result/predictions.csv").read_text(encoding="utf-8")
             preview = list(islice(csv.DictReader(io.StringIO(contents)), 30))
             return jsonify(report=report, preview=preview, csv=contents)
+
+    @app.post("/api/train")
+    def train():
+        try:
+            epochs = int(request.form.get("epochs", "60"))
+        except ValueError as exc:
+            raise DatasetError("Количество эпох должно быть целым числом.") from exc
+        config_file = request.files.get("config")
+        values = None
+        if config_file is not None and config_file.filename:
+            payload = config_file.read(65537)
+            if len(payload) > 65536:
+                raise DatasetError("Контракт превышает 64 КиБ.")
+            try:
+                values = json.loads(payload)
+            except (ValueError, UnicodeDecodeError) as exc:
+                raise DatasetError("Не удалось прочитать JSON-контракт.") from exc
+        with tempfile.TemporaryDirectory(prefix="university-train-") as folder:
+            source = csv_upload(Path(folder))
+            job = manager.submit(source, values, session.setdefault("workspace_id", secrets.token_urlsafe(32)), epochs)
+        return jsonify(job), 202
+
+    @app.get("/api/jobs/<job_id>")
+    def job_status(job_id):
+        return jsonify(manager.get(job_id, session.get("workspace_id", "")))
 
     return app

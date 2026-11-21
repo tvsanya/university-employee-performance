@@ -1,0 +1,11 @@
+{
+  "data_origin": "synthetic",
+  "intended_use": "development_demo_only",
+  "best_epoch": 17,
+  "files": {
+    "test-confusion.png": "5fbcdbb536dcda0bcdd49810dfa3e4970606d370cf028ac62d84de88f9012b3d",
+    "test-confusion.svg": "debb0e014b93560120c5201db1d4f7b3ff649d9f3faaa1b3e1378381bcf27cc3",
+    "training.png": "5019d08e18aa74a0894ab05d4af3e5eeaad9b42872485400089ad079392fc9a0",
+    "training.svg": "39725db9a3ce01d458fbabe01634550892b2a0a8cfd46955b505e024205d3089"
+  }
+}

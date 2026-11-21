@@ -47,6 +47,11 @@ def main(argv=None):
     compare.add_argument("--experiments", nargs="+", required=True, type=Path)
     compare.add_argument("--output", required=True, type=Path)
     compare.add_argument("--report", type=Path)
+    plot = commands.add_parser("plot", help="Экспортировать историю и матрицу ошибок в PNG/SVG")
+    plot.add_argument("--experiment", required=True, type=Path)
+    plot.add_argument("--diagnostics", required=True, type=Path)
+    plot.add_argument("--output", required=True, type=Path)
+    plot.add_argument("--report", type=Path)
     demo = commands.add_parser("generate-demo", help="Создать явно помеченную симуляцию для разработки")
     demo.add_argument("--output", required=True, type=Path)
     demo.add_argument("--employees", type=int, default=1500)
@@ -74,6 +79,9 @@ def main(argv=None):
         elif args.command == "compare":
             from .comparison import run_comparison
             report = run_comparison(args.experiments, args.output)
+        elif args.command == "plot":
+            from .plots import export_plots
+            report = export_plots(args.experiment, args.diagnostics, args.output)
         elif args.command == "train-neural":
             from .tuning import load_network_grid, run_neural_experiment
             config = ExperimentConfig.from_file(args.config)

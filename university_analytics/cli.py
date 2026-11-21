@@ -38,6 +38,11 @@ def main(argv=None):
     predict.add_argument("--model", required=True, type=Path)
     predict.add_argument("--output", required=True, type=Path, help="Новый каталог для predictions.csv и report.json")
     predict.add_argument("--report", type=Path)
+    diagnose = commands.add_parser("diagnose", help="Разобрать ошибки сохранённой JSON-сети без обучения")
+    diagnose.add_argument("--splits", required=True, type=Path)
+    diagnose.add_argument("--experiment", required=True, type=Path)
+    diagnose.add_argument("--output", required=True, type=Path)
+    diagnose.add_argument("--report", type=Path)
     demo = commands.add_parser("generate-demo", help="Создать явно помеченную симуляцию для разработки")
     demo.add_argument("--output", required=True, type=Path)
     demo.add_argument("--employees", type=int, default=1500)
@@ -59,6 +64,9 @@ def main(argv=None):
         elif args.command == "predict":
             from .prediction import run_prediction
             report = run_prediction(args.model, args.source, args.output)
+        elif args.command == "diagnose":
+            from .diagnostics import run_diagnostics
+            report = run_diagnostics(args.splits, args.experiment, args.output)
         elif args.command == "train-neural":
             from .tuning import load_network_grid, run_neural_experiment
             config = ExperimentConfig.from_file(args.config)

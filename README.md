@@ -69,3 +69,21 @@ python main.py train-baseline --splits .local/simulation-splits-new --config dat
 ```
 
 CSV должен содержать признаки из config.json; цель необязательна. В новом каталоге появятся predictions.csv и report.json. Происхождение synthetic и назначение development_demo_only сохраняются в JSON-артефакте и отчёте.
+
+Локальный интерфейс:
+
+```sh
+.venv/bin/python main.py serve --port 8033
+```
+
+Откройте http://127.0.0.1:8033. Доступны проверка CSV, просмотр экспериментов/графиков, загрузка JSON-модели, прогноз и CSV-результат. Обучение пока запускается командами CLI.
+
+Дополнительные команды:
+
+```sh
+.venv/bin/python main.py diagnose --splits .local/simulation-splits-v1 --experiment models/simulation-neural-v1 --output reports/new-diagnostics
+.venv/bin/python main.py compare --experiments models/simulation-baseline-v1 models/simulation-neural-v1 --output reports/new-comparison
+.venv/bin/python main.py plot --experiment models/simulation-neural-v1 --diagnostics reports/simulation-neural-v1 --output reports/new-figures
+```
+
+Существующий результат не перезаписывается. JSON/CSV/Markdown сравнения и PNG/SVG графиков сохранены в reports/. Эти материалы относятся только к симуляции.

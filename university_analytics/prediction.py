@@ -9,12 +9,21 @@ from .data import DatasetError, load_dataset
 from .portable import PortableNetwork
 
 
-def run_prediction(model_path, source, destination):
+def spreadsheet_text(value):
+    text = str(value)
+    return "'"+text if text.lstrip().startswith(("=", "+", "-", "@")) else text
+
+
+def run_prediction(model_path, source, destination, *, max_rows=None, max_classes=None):
     destination = Path(destination)
     if destination.exists():
         raise DatasetError("Каталог прогнозов уже существует; выберите новый путь.")
     model = PortableNetwork.from_file(model_path)
     dataset = load_dataset(source)
+    if max_rows is not None and len(dataset.rows) > max_rows:
+        raise DatasetError(f"В интерфейсе допустимо до {max_rows} строк за прогноз.")
+    if max_classes is not None and len(model.classes) > max_classes:
+        raise DatasetError(f"В интерфейсе допустимо до {max_classes} категорий модели.")
     if not dataset.rows:
         raise DatasetError("Набор для прогноза пуст.")
     probabilities = model.predict_proba(dataset)
@@ -33,7 +42,7 @@ def run_prediction(model_path, source, destination):
             writer = csv.writer(stream, lineterminator="\n")
             writer.writerow(["source_row", *([group] if group_index is not None else []), "predicted_class", *report["probability_columns"]])
             for number, (row, predicted, probabilities_row) in enumerate(zip(dataset.rows, predictions, probabilities), 2):
-                writer.writerow([number, *([row[group_index]] if group_index is not None else []), predicted, *[f"{value:.12g}" for value in probabilities_row]])
+                writer.writerow([number, *([spreadsheet_text(row[group_index])] if group_index is not None else []), spreadsheet_text(predicted), *[f"{value:.12g}" for value in probabilities_row]])
         (temporary/"report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False)+"\n", encoding="utf-8")
         temporary.rename(destination)
         return report

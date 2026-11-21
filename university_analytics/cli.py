@@ -52,6 +52,8 @@ def main(argv=None):
     plot.add_argument("--diagnostics", required=True, type=Path)
     plot.add_argument("--output", required=True, type=Path)
     plot.add_argument("--report", type=Path)
+    serve = commands.add_parser("serve", help="Открыть локальный интерфейс данных и JSON-прогноза")
+    serve.add_argument("--port", type=int, default=8033)
     demo = commands.add_parser("generate-demo", help="Создать явно помеченную симуляцию для разработки")
     demo.add_argument("--output", required=True, type=Path)
     demo.add_argument("--employees", type=int, default=1500)
@@ -67,7 +69,13 @@ def main(argv=None):
             command.add_argument("--target", required=command is not inspect, help="Название целевой колонки")
     args = parser.parse_args(argv)
     try:
-        if args.command == "generate-demo":
+        if args.command == "serve":
+            if not 1024 <= args.port <= 65535:
+                parser.error("Порт должен быть от 1024 до 65535.")
+            from .gui import create_app
+            create_app().run(host="127.0.0.1", port=args.port, debug=False, use_reloader=False)
+            return 0
+        elif args.command == "generate-demo":
             from .simulation import generate_demo
             report = generate_demo(args.output, employees=args.employees, periods=args.periods, seed=args.seed)
         elif args.command == "predict":

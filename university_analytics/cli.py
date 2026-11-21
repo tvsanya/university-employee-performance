@@ -43,6 +43,10 @@ def main(argv=None):
     diagnose.add_argument("--experiment", required=True, type=Path)
     diagnose.add_argument("--output", required=True, type=Path)
     diagnose.add_argument("--report", type=Path)
+    compare = commands.add_parser("compare", help="Сравнить семейства моделей по validation")
+    compare.add_argument("--experiments", nargs="+", required=True, type=Path)
+    compare.add_argument("--output", required=True, type=Path)
+    compare.add_argument("--report", type=Path)
     demo = commands.add_parser("generate-demo", help="Создать явно помеченную симуляцию для разработки")
     demo.add_argument("--output", required=True, type=Path)
     demo.add_argument("--employees", type=int, default=1500)
@@ -67,6 +71,9 @@ def main(argv=None):
         elif args.command == "diagnose":
             from .diagnostics import run_diagnostics
             report = run_diagnostics(args.splits, args.experiment, args.output)
+        elif args.command == "compare":
+            from .comparison import run_comparison
+            report = run_comparison(args.experiments, args.output)
         elif args.command == "train-neural":
             from .tuning import load_network_grid, run_neural_experiment
             config = ExperimentConfig.from_file(args.config)

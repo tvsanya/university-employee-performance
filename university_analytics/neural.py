@@ -87,8 +87,8 @@ def train_network(train, validation, config, parameters=None):
             raise DatasetError(f"Не удалось обучить сеть: {exc}") from exc
         if not math.isfinite(classifier.loss_) or not all(np.isfinite(layer).all() for layer in classifier.coefs_ + classifier.intercepts_):
             raise DatasetError("Обучение разошлось: нечисловые веса или loss.")
-        train_score = scores("classification", train_y, classifier.predict(train_x))
-        validation_score = scores("classification", validation_y, classifier.predict(validation_x))
+        train_score = scores("classification", train_y, classifier.predict(train_x), labels=classes)
+        validation_score = scores("classification", validation_y, classifier.predict(validation_x), labels=classes)
         score = validation_score["macro_f1"]
         history.append({"epoch": epoch, "loss": float(classifier.loss_), "train": train_score, "validation": validation_score})
         if score > best_score:

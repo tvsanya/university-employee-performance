@@ -192,7 +192,7 @@ def create_app(repository=None):
                 raise DatasetError("Контракт превышает 64 КиБ.")
             try:
                 values = json.loads(payload)
-            except (ValueError, UnicodeDecodeError) as exc:
+            except (ValueError, UnicodeDecodeError, RecursionError) as exc:
                 raise DatasetError("Не удалось прочитать JSON-контракт.") from exc
         with tempfile.TemporaryDirectory(prefix="university-train-") as folder:
             source = csv_upload(Path(folder))

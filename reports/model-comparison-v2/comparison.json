@@ -1,0 +1,104 @@
+{
+  "source_sha256": "698dbfc7709f492a58f8ee1dcba83d8355173ad0ebd0ae8d257e49c5dd1e75af",
+  "split_manifest_sha256": "7ac643421eb3b8b655b1f7344b5e1687960e62005cb3c00f83d878ccaebff45e",
+  "data_origin": "synthetic",
+  "rows": {
+    "train": 2100,
+    "validation": 450,
+    "test": 450
+  },
+  "config": {
+    "task": "classification",
+    "target": "efficiency_level",
+    "target_description": "Синтетическая категория скрытого фактора симулятора; не реальная оценка сотрудника",
+    "numeric_features": [
+      "employment_fraction",
+      "planned_teaching_hours",
+      "teaching_hours",
+      "student_feedback_avg",
+      "course_completion_rate",
+      "publication_count",
+      "training_hours",
+      "admin_delay_days",
+      "digital_activity_rate"
+    ],
+    "categorical_features": [
+      "department",
+      "position"
+    ],
+    "group_column": "employee_id",
+    "excluded_columns": [
+      "efficiency_score",
+      "source_kind",
+      "period_id"
+    ],
+    "seed": 42
+  },
+  "selection_partition": "validation",
+  "selection_metric": "macro_f1",
+  "tie_breaker": "first_equal_validation",
+  "selected": "1:linear",
+  "entries": [
+    {
+      "id": "1:dummy",
+      "experiment": "simulation-baseline-v1",
+      "model": "dummy",
+      "metrics": {
+        "train": {
+          "accuracy": 0.589047619047619,
+          "macro_f1": 0.24712815902507243
+        },
+        "validation": {
+          "accuracy": 0.5488888888888889,
+          "macro_f1": 0.23625059780009564
+        },
+        "test": {
+          "accuracy": 0.5888888888888889,
+          "macro_f1": 0.24708624708624707
+        }
+      },
+      "report_sha256": "26b98182fd2aa13246de14a2f7a5fc646caa153375540994c7cf4f3bba6ee0f7"
+    },
+    {
+      "id": "1:linear",
+      "experiment": "simulation-baseline-v1",
+      "model": "linear",
+      "metrics": {
+        "train": {
+          "accuracy": 0.7633333333333333,
+          "macro_f1": 0.7542628136149666
+        },
+        "validation": {
+          "accuracy": 0.8022222222222222,
+          "macro_f1": 0.7976393285100158
+        },
+        "test": {
+          "accuracy": 0.76,
+          "macro_f1": 0.7470509302405853
+        }
+      },
+      "report_sha256": "26b98182fd2aa13246de14a2f7a5fc646caa153375540994c7cf4f3bba6ee0f7"
+    },
+    {
+      "id": "2:neural",
+      "experiment": "simulation-neural-v1",
+      "model": "neural",
+      "metrics": {
+        "train": {
+          "accuracy": 0.7685714285714286,
+          "macro_f1": 0.7610574764060253
+        },
+        "validation": {
+          "accuracy": 0.7955555555555556,
+          "macro_f1": 0.7957974717941484
+        },
+        "test": {
+          "accuracy": 0.7844444444444445,
+          "macro_f1": 0.7714011030125532
+        }
+      },
+      "report_sha256": "4356ee15e432f46f1f0c5173b67941082c55e2c21424c62209a547e4a4e3cc92"
+    }
+  ],
+  "intended_use": "development_demo_only"
+}

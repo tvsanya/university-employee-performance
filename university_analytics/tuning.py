@@ -46,7 +46,7 @@ def fit_neural_candidates(datasets, config, candidates):
             selected_model, selected_key, selected_number = model, key, number
     # Test впервые применяется после окончательного выбора сети.
     evaluations = {name: scores(config.task, target_vector(datasets[name], config),
-        selected_model.predict(feature_matrix(datasets[name], config))) for name in PARTITIONS}
+        selected_model.predict(feature_matrix(datasets[name], config)), labels=selected_model.named_steps["model"].classes_) for name in PARTITIONS}
     chosen = trials[selected_number-1]
     report = {"task": config.task, "target_description": config.target_description,
         "selected_model": "neural", "selected_candidate": selected_number,

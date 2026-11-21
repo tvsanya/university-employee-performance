@@ -60,9 +60,10 @@ def load_split_bundle(directory: Path, config: ExperimentConfig):
     return datasets, manifest
 
 
-def scores(task, truth, predicted):
+def scores(task, truth, predicted, labels=None):
     if task == "classification":
-        return {"accuracy": float(accuracy_score(truth, predicted)), "macro_f1": float(f1_score(truth, predicted, average="macro", zero_division=0))}
+        classes = np.unique(np.concatenate([np.asarray(labels if labels is not None else []), np.asarray(truth), np.asarray(predicted)]))
+        return {"accuracy": float(accuracy_score(truth, predicted)), "macro_f1": float(f1_score(truth, predicted, labels=classes, average="macro", zero_division=0))}
     if not np.isfinite(predicted).all():
         raise DatasetError("Модель вернула нечисловой или бесконечный прогноз.")
     return {"mae": float(mean_absolute_error(truth, predicted)),
@@ -95,7 +96,8 @@ def fit_baselines(datasets: dict[str, Dataset], config: ExperimentConfig):
             model.fit(matrices["train"], targets["train"])
         except ValueError as exc:
             raise DatasetError(f"Не удалось обучить {name}: {exc}") from exc
-        evaluations[name] = {part: scores(config.task, targets[part], model.predict(matrices[part])) for part in PARTITIONS}
+        evaluations[name] = {part: scores(config.task, targets[part], model.predict(matrices[part]),
+            labels=np.unique(targets["train"]) if config.task == "classification" else None) for part in PARTITIONS}
         models[name] = model
     metric = "macro_f1" if config.task == "classification" else "mae"
     selected = min(evaluations, key=lambda name: -evaluations[name]["validation"][metric] if config.task == "classification" else evaluations[name]["validation"][metric])

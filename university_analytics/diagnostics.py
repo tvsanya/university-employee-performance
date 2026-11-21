@@ -19,7 +19,7 @@ def classification_diagnostics(truth, predicted, classes):
         raise DatasetError("Нужны непустые одинаковые по длине цели и прогнозы.")
     labels = sorted(set(classes) | set(truth) | set(predicted))
     precision, recall, f1, support = precision_recall_fscore_support(truth, predicted, labels=labels, zero_division=0)
-    return {"metrics": scores("classification", truth, predicted), "labels": labels,
+    return {"metrics": scores("classification", truth, predicted, labels=labels), "labels": labels,
         "confusion_matrix": confusion_matrix(truth, predicted, labels=labels).tolist(),
         "per_class": [{"label": label, "precision": float(precision[i]), "recall": float(recall[i]),
             "f1": float(f1[i]), "support": int(support[i])} for i, label in enumerate(labels)],
@@ -43,7 +43,7 @@ def diagnose_dataset(dataset, config, model, minimum_slice=20):
                 suppressed += 1
                 continue
             slices.append({"feature": feature, "value": value, "rows": len(indices),
-                "metrics": scores("classification", truth[indices], predicted[indices])})
+                "metrics": scores("classification", truth[indices], predicted[indices], labels=model.classes)})
     return {**report, "slices": slices, "minimum_slice_rows": minimum_slice, "suppressed_slices": suppressed}
 
 

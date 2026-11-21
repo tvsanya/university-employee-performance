@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 import joblib
 import numpy as np
-from university_analytics.baselines import fit_baselines, load_split_bundle
+from university_analytics.baselines import fit_baselines, load_split_bundle, scores
 from university_analytics.cli import main
 from university_analytics.data import Dataset, DatasetError
 from university_analytics.experiment import ExperimentConfig
@@ -25,6 +25,10 @@ def fixture(task="classification", size=60):
 
 
 class BaselineTests(unittest.TestCase):
+    def test_missing_class_keeps_its_zero_contribution_in_macro_f1(self):
+        result = scores("classification", ["a", "a"], ["a", "a"], labels=["a", "b"])
+        self.assertEqual((result["accuracy"], result["macro_f1"]), (1, .5))
+
     def test_classification_metrics_and_validation_selection(self):
         _, config, _, datasets = fixture()
         models, report = fit_baselines(datasets, config)

@@ -53,6 +53,9 @@ class GuiTests(unittest.TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn("error", response.json)
         self.assertNotIn(str(self.root), response.json["error"])
+        malformed = self.client.post("/api/train", data={"data": (io.BytesIO(b"x,y\n1,2\n"), "data.csv"),
+            "config": (io.BytesIO(b"["*2000+b"]"*2000), "deep.json")}, headers={"X-CSRF-Token": self.token})
+        self.assertEqual(malformed.status_code, 400)
 
     def test_prediction_row_limit_prevents_unbounded_response(self):
         contents = b"x,y\n"+b"1,2\n"*20001

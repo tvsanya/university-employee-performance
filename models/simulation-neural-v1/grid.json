@@ -1,0 +1,47 @@
+[
+  {
+    "hidden_layers": [
+      32,
+      16
+    ],
+    "activation": "relu",
+    "learning_rate": 0.001,
+    "alpha": 0.0001,
+    "batch_size": 64,
+    "max_epochs": 120,
+    "patience": 18,
+    "min_delta": 0.0001,
+    "balanced": true,
+    "seed": 42
+  },
+  {
+    "hidden_layers": [
+      32,
+      16
+    ],
+    "activation": "relu",
+    "learning_rate": 0.003,
+    "alpha": 0.001,
+    "batch_size": 64,
+    "max_epochs": 120,
+    "patience": 18,
+    "min_delta": 0.0001,
+    "balanced": true,
+    "seed": 42
+  },
+  {
+    "hidden_layers": [
+      64,
+      32
+    ],
+    "activation": "relu",
+    "learning_rate": 0.001,
+    "alpha": 0.001,
+    "batch_size": 64,
+    "max_epochs": 120,
+    "patience": 18,
+    "min_delta": 0.0001,
+    "balanced": true,
+    "seed": 42
+  }
+]

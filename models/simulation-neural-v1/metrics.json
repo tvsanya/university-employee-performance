@@ -1,0 +1,151 @@
+{
+  "task": "classification",
+  "target_description": "Синтетическая категория скрытого фактора симулятора; не реальная оценка сотрудника",
+  "selected_model": "neural",
+  "selected_candidate": 1,
+  "selection_partition": "validation",
+  "selection_metric": "macro_f1",
+  "tie_breaker": "fewer_parameters_then_first_candidate",
+  "architecture": {
+    "input_units": 16,
+    "hidden_layers": [
+      32,
+      16
+    ],
+    "output_units": 3,
+    "output_activation": "softmax",
+    "class_labels": [
+      "высокая",
+      "низкая",
+      "средняя"
+    ],
+    "activation": "relu",
+    "parameter_count": 1123
+  },
+  "parameters": {
+    "hidden_layers": [
+      32,
+      16
+    ],
+    "activation": "relu",
+    "learning_rate": 0.001,
+    "alpha": 0.0001,
+    "batch_size": 64,
+    "max_epochs": 120,
+    "patience": 18,
+    "min_delta": 0.0001,
+    "balanced": true,
+    "seed": 42
+  },
+  "best_epoch": 17,
+  "metrics": {
+    "neural": {
+      "train": {
+        "accuracy": 0.7685714285714286,
+        "macro_f1": 0.7610574764060253
+      },
+      "validation": {
+        "accuracy": 0.7955555555555556,
+        "macro_f1": 0.7957974717941484
+      },
+      "test": {
+        "accuracy": 0.7844444444444445,
+        "macro_f1": 0.7714011030125532
+      }
+    }
+  },
+  "rows": {
+    "train": 2100,
+    "validation": 450,
+    "test": 450
+  },
+  "candidates": [
+    {
+      "candidate": 1,
+      "parameters": {
+        "hidden_layers": [
+          32,
+          16
+        ],
+        "activation": "relu",
+        "learning_rate": 0.001,
+        "alpha": 0.0001,
+        "batch_size": 64,
+        "max_epochs": 120,
+        "patience": 18,
+        "min_delta": 0.0001,
+        "balanced": true,
+        "seed": 42
+      },
+      "best_epoch": 17,
+      "epochs_run": 35,
+      "stop_reason": "patience",
+      "best_validation_macro_f1": 0.7957974717941484
+    },
+    {
+      "candidate": 2,
+      "parameters": {
+        "hidden_layers": [
+          32,
+          16
+        ],
+        "activation": "relu",
+        "learning_rate": 0.003,
+        "alpha": 0.001,
+        "batch_size": 64,
+        "max_epochs": 120,
+        "patience": 18,
+        "min_delta": 0.0001,
+        "balanced": true,
+        "seed": 42
+      },
+      "best_epoch": 21,
+      "epochs_run": 39,
+      "stop_reason": "patience",
+      "best_validation_macro_f1": 0.7859416444801988
+    },
+    {
+      "candidate": 3,
+      "parameters": {
+        "hidden_layers": [
+          64,
+          32
+        ],
+        "activation": "relu",
+        "learning_rate": 0.001,
+        "alpha": 0.001,
+        "batch_size": 64,
+        "max_epochs": 120,
+        "patience": 18,
+        "min_delta": 0.0001,
+        "balanced": true,
+        "seed": 42
+      },
+      "best_epoch": 32,
+      "epochs_run": 50,
+      "stop_reason": "patience",
+      "best_validation_macro_f1": 0.7706986624316691
+    }
+  ],
+  "runtime_seconds": 1.051,
+  "source_sha256": "698dbfc7709f492a58f8ee1dcba83d8355173ad0ebd0ae8d257e49c5dd1e75af",
+  "data_origin": "synthetic",
+  "split_manifest_sha256": "7ac643421eb3b8b655b1f7344b5e1687960e62005cb3c00f83d878ccaebff45e",
+  "versions": {
+    "numpy": "2.5.5",
+    "scikit-learn": "1.9.1",
+    "joblib": "1.6.0",
+    "scipy": "1.18.1"
+  },
+  "intended_use": "development_demo_only",
+  "artifacts": {
+    "neural": {
+      "file": "model3.joblib",
+      "sha256": "6926bce2d917f49f4432eedf1fd0c04440a9031528fb4a1d0b3d01770ec17f0c"
+    }
+  },
+  "training_artifact": {
+    "file": "training.json",
+    "sha256": "63b5813ecadd5f2328203c79a044f4c9719aa063baed476f0b1224b7957dff0a"
+  }
+}

@@ -53,3 +53,11 @@ python main.py train-baseline --splits .local/simulation-splits-new --config dat
 ```
 
 Готовые данные, provenance и контракт находятся в `data/simulation-v1`. Признаки и метки генерируются из искусственного скрытого фактора с шумом. Поле efficiency_score исключено из признаков классификации efficiency_level. ФИО реальных людей отсутствуют. Модель, демонстрационный интерфейс и DL можно разрабатывать на этом наборе; требование задания о реальных исследовательских данных остаётся невыполненным.
+
+Обучение и подбор DL по внешней validation:
+
+```sh
+.venv/bin/python main.py train-neural --splits .local/simulation-splits-v1 --config data/simulation-v1/experiment.json --grid configs/network-grid-v1.json --output models/new-neural-experiment
+```
+
+Сохранённый демонстрационный запуск — models/simulation-neural-v1. Его метрики относятся к синтетическому сценарию; детали и сравнение с baseline приведены в docs/MODELING.md.

@@ -27,6 +27,12 @@ def main(argv=None):
     baseline.add_argument("--config", required=True, type=Path)
     baseline.add_argument("--output", required=True, type=Path)
     baseline.add_argument("--report", type=Path)
+    neural = commands.add_parser("train-neural", help="Подобрать DL-сеть по validation и сохранить лучший checkpoint")
+    neural.add_argument("--splits", required=True, type=Path)
+    neural.add_argument("--config", required=True, type=Path)
+    neural.add_argument("--grid", required=True, type=Path)
+    neural.add_argument("--output", required=True, type=Path)
+    neural.add_argument("--report", type=Path)
     demo = commands.add_parser("generate-demo", help="Создать явно помеченную симуляцию для разработки")
     demo.add_argument("--output", required=True, type=Path)
     demo.add_argument("--employees", type=int, default=1500)
@@ -45,6 +51,10 @@ def main(argv=None):
         if args.command == "generate-demo":
             from .simulation import generate_demo
             report = generate_demo(args.output, employees=args.employees, periods=args.periods, seed=args.seed)
+        elif args.command == "train-neural":
+            from .tuning import load_network_grid, run_neural_experiment
+            config = ExperimentConfig.from_file(args.config)
+            report = run_neural_experiment(args.splits, config, load_network_grid(args.grid, config.seed), args.output)
         elif args.command == "train-baseline":
             # Зависимости обучения не требуются для обычного inspect.
             from .baselines import run_baseline_experiment

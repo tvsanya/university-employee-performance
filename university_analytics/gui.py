@@ -6,6 +6,7 @@ import io
 import json
 import re
 import secrets
+import os
 import tempfile
 from itertools import islice
 from pathlib import Path
@@ -15,6 +16,27 @@ from .data import DatasetError, MAX_BYTES, load_dataset
 from .prediction import run_prediction
 from .quality import profile_dataset
 from .jobs import TrainingManager, TrainingBusy, JobNotFound
+from .job_artifacts import ARTIFACT_LABELS, JobNotReady, artifact_path, experiment_archive, completed_job
+
+
+def local_secret(repository):
+    directory = repository/".local"
+    directory.mkdir(exist_ok=True)
+    secret_path = directory/"gui-secret.key"
+    if not secret_path.exists():
+        with tempfile.NamedTemporaryFile(mode="w", dir=directory, prefix=".gui-secret-", delete=False) as stream:
+            stream.write(secrets.token_hex(32))
+            temporary = Path(stream.name)
+        try:
+            os.link(temporary, secret_path)
+        except FileExistsError:
+            pass
+        finally:
+            temporary.unlink(missing_ok=True)
+    secret = secret_path.read_text(encoding="utf-8").strip()
+    if len(secret) < 64:
+        raise DatasetError("Повреждён локальный ключ браузерной сессии.")
+    return secret
 
 
 def create_app(repository=None):
@@ -22,7 +44,7 @@ def create_app(repository=None):
     models = repository/"models"
     web = Path(__file__).parent/"web"
     app = Flask(__name__, template_folder=str(web/"templates"), static_folder=str(web/"static"))
-    app.config.update(SECRET_KEY=secrets.token_hex(32), MAX_CONTENT_LENGTH=38*1024*1024,
+    app.config.update(SECRET_KEY=local_secret(repository), MAX_CONTENT_LENGTH=38*1024*1024,
         MAX_FORM_MEMORY_SIZE=512*1024, MAX_FORM_PARTS=10, TRUSTED_HOSTS=["127.0.0.1", "localhost"],
         SESSION_COOKIE_NAME="university_analytics_session", SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE="Strict")
     app.json.sort_keys = False
@@ -60,6 +82,10 @@ def create_app(repository=None):
 
     @app.errorhandler(TrainingBusy)
     def busy(error):
+        return jsonify(error=str(error)), 409
+
+    @app.errorhandler(JobNotReady)
+    def job_not_ready(error):
         return jsonify(error=str(error)), 409
 
     @app.errorhandler(JobNotFound)
@@ -131,12 +157,16 @@ def create_app(repository=None):
                 model_path.write_bytes(contents)
             else:
                 name = request.form.get("experiment", "")
-                if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,100}", name):
-                    raise DatasetError("Выберите сохранённую модель или загрузите JSON-файл.")
-                experiment = models/name
-                if experiment.resolve().parent != models.resolve():
-                    abort(400)
-                model_path = experiment/"model.json"
+                if name.startswith("job:"):
+                    model_path = artifact_path(manager, name[4:], session.get("workspace_id", ""), "model.json")
+                    experiment = model_path.parent
+                else:
+                    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,100}", name):
+                        raise DatasetError("Выберите сохранённую модель или загрузите JSON-файл.")
+                    experiment = models/name
+                    if experiment.resolve().parent != models.resolve():
+                        abort(400)
+                    model_path = experiment/"model.json"
                 try:
                     metadata = json.loads((experiment/"metrics.json").read_text(encoding="utf-8"))
                 except ValueError as exc:
@@ -172,5 +202,30 @@ def create_app(repository=None):
     @app.get("/api/jobs/<job_id>")
     def job_status(job_id):
         return jsonify(manager.get(job_id, session.get("workspace_id", "")))
+
+    @app.get("/api/jobs")
+    def job_list():
+        return jsonify(jobs=manager.list(session.get("workspace_id", "")))
+
+    @app.get("/api/jobs/<job_id>/artifacts")
+    def job_artifacts(job_id):
+        directory, state = completed_job(manager, job_id, session.get("workspace_id", ""))
+        comparison = json.loads((directory/"comparison/comparison.json").read_text(encoding="utf-8"))
+        return jsonify(selected=state["result"], comparison=comparison,
+            files=[{"name": name, "label": label} for name, label in ARTIFACT_LABELS.items()])
+
+    @app.get("/api/jobs/<job_id>/download/<name>")
+    def job_download(job_id, name):
+        owner = session.get("workspace_id", "")
+        if name == "experiment.zip":
+            return send_file(experiment_archive(manager, job_id, owner), as_attachment=True, download_name="experiment.zip", mimetype="application/zip")
+        path = artifact_path(manager, job_id, owner, name)
+        return send_file(path, as_attachment=True, download_name=name)
+
+    @app.get("/api/jobs/<job_id>/figure/<name>")
+    def job_figure(job_id, name):
+        if name not in {"training.png", "neural-confusion.png"}:
+            raise JobNotFound
+        return send_file(artifact_path(manager, job_id, session.get("workspace_id", ""), name), mimetype="image/png")
 
     return app

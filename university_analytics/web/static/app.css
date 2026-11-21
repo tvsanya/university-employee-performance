@@ -3,3 +3,5 @@
 .plots{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:24px;align-items:center}.plots img{width:100%;height:auto}@media(max-width:800px){.plots{grid-template-columns:1fr}}
 
 #training-form{max-width:650px}#training-form label{display:block;margin:18px 0 7px;font-weight:600}#training-form button{margin:20px 0}#job-progress{width:100%;max-width:650px;height:18px;accent-color:var(--accent)}#training-result{margin-top:20px}
+
+.plots figure{margin:15px 0}.plots figcaption{font-size:14px;color:#617486}#job-artifacts a{font-size:14px;color:var(--accent)}

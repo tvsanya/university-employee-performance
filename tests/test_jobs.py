@@ -3,6 +3,7 @@ import json
 import tempfile
 import threading
 import unittest
+from zipfile import ZipFile
 from pathlib import Path
 from unittest.mock import patch
 from university_analytics.data import DatasetError
@@ -36,8 +37,26 @@ class TrainingJobTests(unittest.TestCase):
             self.assertEqual(status.json["state"], "completed")
             self.assertEqual(status.json["result"]["intended_use"], "development_demo_only")
             self.assertTrue((manager.root/job_id/"comparison/comparison.json").exists())
+            artifacts = client.get("/api/jobs/"+job_id+"/artifacts")
+            self.assertEqual(artifacts.status_code, 200)
+            model = client.get("/api/jobs/"+job_id+"/download/model.json")
+            self.assertIn("config", json.loads(model.data));model.close()
+            archive = client.get("/api/jobs/"+job_id+"/download/experiment.zip")
+            with ZipFile(io.BytesIO(archive.data)) as bundle:
+                self.assertIn("input.csv", bundle.namelist())
+                self.assertNotIn("status.json", bundle.namelist())
+                self.assertIn("SHA256SUMS.json", bundle.namelist())
+            archive.close()
+            self.assertEqual(client.get("/api/jobs/"+job_id+"/download/status.json").status_code, 404)
+            self.assertEqual(len(client.get("/api/jobs").json["jobs"]), 1)
+            prediction = client.post("/api/predict", data={"data": (io.BytesIO(source.read_bytes()), "predict.csv"),
+                "experiment": "job:"+job_id}, headers={"X-CSRF-Token": token})
+            self.assertEqual(prediction.status_code, 200)
+            self.assertEqual(prediction.json["report"]["rows"], 1000)
             other = app.test_client();other.get("/")
             self.assertEqual(other.get("/api/jobs/"+job_id).status_code, 404)
+            self.assertEqual(other.get("/api/jobs/"+job_id+"/download/model.json").status_code, 404)
+            self.assertEqual(other.get("/api/jobs").json["jobs"], [])
             self.assertNotIn("owner", status.json)
             manager.close()
 

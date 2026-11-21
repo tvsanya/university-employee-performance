@@ -142,14 +142,38 @@ class TrainingManager:
             state = json.loads((directory/"status.json").read_text(encoding="utf-8"))
         except (OSError, ValueError) as exc:
             raise JobNotFound from exc
-        if not hmac.compare_digest(state.get("owner", ""), hashlib.sha256(owner.encode()).hexdigest()):
+        if not isinstance(state, dict) or not isinstance(state.get("owner"), str) or state.get("id") != job_id:
+            raise JobNotFound
+        if not hmac.compare_digest(state["owner"], hashlib.sha256(owner.encode()).hexdigest()):
             raise JobNotFound
         return directory
 
     def get(self, job_id, owner):
         directory = self.directory(job_id, owner)
         state = json.loads((directory/"status.json").read_text(encoding="utf-8"))
+        if state.get("state") in {"queued", "running"} and state.get("pid") != os.getpid():
+            try:
+                pid = state.get("pid")
+                if type(pid) is not int or pid <= 0:
+                    raise ProcessLookupError
+                os.kill(pid, 0)
+            except ProcessLookupError:
+                state.update(state="failed", stage="Запуск прерван", progress=0,
+                    error="Предыдущий процесс завершился до окончания обучения. Создайте новый эксперимент.")
+            except PermissionError:
+                pass
         return {key: value for key, value in state.items() if key not in {"owner", "pid"}}
+
+    def list(self, owner):
+        result = []
+        for directory in self.root.iterdir():
+            if not directory.is_dir():
+                continue
+            try:
+                result.append(self.get(directory.name, owner))
+            except JobNotFound:
+                continue
+        return sorted(result, key=lambda item: item["created_at"], reverse=True)[:20]
 
     def close(self):
         self.executor.shutdown(wait=True, cancel_futures=True)

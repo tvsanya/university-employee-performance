@@ -1,0 +1,162 @@
+{
+  "partition": "validation",
+  "rows": 450,
+  "source_sha256": "698dbfc7709f492a58f8ee1dcba83d8355173ad0ebd0ae8d257e49c5dd1e75af",
+  "split_manifest_sha256": "7ac643421eb3b8b655b1f7344b5e1687960e62005cb3c00f83d878ccaebff45e",
+  "model_sha256": "1c9cfee15e2aa6eff4ada43aa52eeefda6d1cef79c218a9d0f3969ae83535c33",
+  "data_origin": "synthetic",
+  "intended_use": "development_demo_only",
+  "analysis": "probability_quality",
+  "classes": [
+    "высокая",
+    "низкая",
+    "средняя"
+  ],
+  "log_loss": 0.48998192573199945,
+  "log_loss_epsilon": 1e-15,
+  "true_probabilities_below_epsilon": 0,
+  "multiclass_brier_sum": 0.31092036664171396,
+  "top_label_ece": 0.050550846999444385,
+  "maximum_bin_gap": 0.5039194559274953,
+  "mean_confidence": 0.7988684007244563,
+  "accuracy": 0.7955555555555556,
+  "mean_normalized_entropy": 0.43105545515611976,
+  "reliability_bins": [
+    {
+      "lower": 0.0,
+      "upper": 0.1,
+      "rows": 0,
+      "mean_confidence": null,
+      "accuracy": null,
+      "absolute_gap": null
+    },
+    {
+      "lower": 0.1,
+      "upper": 0.2,
+      "rows": 0,
+      "mean_confidence": null,
+      "accuracy": null,
+      "absolute_gap": null
+    },
+    {
+      "lower": 0.2,
+      "upper": 0.3,
+      "rows": 0,
+      "mean_confidence": null,
+      "accuracy": null,
+      "absolute_gap": null
+    },
+    {
+      "lower": 0.3,
+      "upper": 0.4,
+      "rows": 0,
+      "mean_confidence": null,
+      "accuracy": null,
+      "absolute_gap": null
+    },
+    {
+      "lower": 0.4,
+      "upper": 0.5,
+      "rows": 2,
+      "mean_confidence": 0.4960805440725047,
+      "accuracy": 1.0,
+      "absolute_gap": 0.5039194559274953
+    },
+    {
+      "lower": 0.5,
+      "upper": 0.6,
+      "rows": 55,
+      "mean_confidence": 0.5456819119836933,
+      "accuracy": 0.6727272727272727,
+      "absolute_gap": 0.12704536074357942
+    },
+    {
+      "lower": 0.6,
+      "upper": 0.7,
+      "rows": 59,
+      "mean_confidence": 0.6528035359912882,
+      "accuracy": 0.6779661016949152,
+      "absolute_gap": 0.02516256570362707
+    },
+    {
+      "lower": 0.7,
+      "upper": 0.8,
+      "rows": 80,
+      "mean_confidence": 0.7517347230421565,
+      "accuracy": 0.6875,
+      "absolute_gap": 0.0642347230421565
+    },
+    {
+      "lower": 0.8,
+      "upper": 0.9,
+      "rows": 121,
+      "mean_confidence": 0.850011361300773,
+      "accuracy": 0.859504132231405,
+      "absolute_gap": 0.009492770930631944
+    },
+    {
+      "lower": 0.9,
+      "upper": 1.0,
+      "rows": 133,
+      "mean_confidence": 0.9547409992068054,
+      "accuracy": 0.9022556390977443,
+      "absolute_gap": 0.05248536010906113
+    }
+  ],
+  "classwise": [
+    {
+      "label": "высокая",
+      "support": 128,
+      "mean_predicted_probability": 0.3518917082656256,
+      "observed_frequency": 0.28444444444444444,
+      "binary_brier": 0.09316263868677702
+    },
+    {
+      "label": "низкая",
+      "support": 75,
+      "mean_predicted_probability": 0.2153134372386222,
+      "observed_frequency": 0.16666666666666666,
+      "binary_brier": 0.06157648187344989
+    },
+    {
+      "label": "средняя",
+      "support": 247,
+      "mean_predicted_probability": 0.43279485449575217,
+      "observed_frequency": 0.5488888888888889,
+      "binary_brier": 0.15618124608148706
+    }
+  ],
+  "selective": [
+    {
+      "threshold": 0,
+      "rows": 450,
+      "coverage": 1.0,
+      "accuracy": 0.7955555555555556
+    },
+    {
+      "threshold": 0.5,
+      "rows": 448,
+      "coverage": 0.9955555555555555,
+      "accuracy": 0.7946428571428571
+    },
+    {
+      "threshold": 0.7,
+      "rows": 334,
+      "coverage": 0.7422222222222222,
+      "accuracy": 0.8353293413173652
+    },
+    {
+      "threshold": 0.9,
+      "rows": 133,
+      "coverage": 0.29555555555555557,
+      "accuracy": 0.9022556390977443
+    },
+    {
+      "threshold": 0.95,
+      "rows": 76,
+      "coverage": 0.1688888888888889,
+      "accuracy": 0.9736842105263158
+    }
+  ],
+  "limitation": "Это описательная оценка вероятностей на validation, а не калибровка модели. Brier и log-loss учитывают также различимость классов; ECE зависит от интервалов. Пороги не подбираются и не являются правилом кадрового решения."
+}

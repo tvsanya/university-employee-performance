@@ -59,6 +59,11 @@ def main(argv=None):
     importance.add_argument("--repeats", type=int, default=5)
     importance.add_argument("--seed", type=int, default=42)
     importance.add_argument("--report", type=Path)
+    probabilities = commands.add_parser("probabilities", help="Проверить вероятности и уверенность на validation")
+    probabilities.add_argument("--splits", required=True, type=Path)
+    probabilities.add_argument("--experiment", required=True, type=Path)
+    probabilities.add_argument("--output", required=True, type=Path)
+    probabilities.add_argument("--report", type=Path)
     serve = commands.add_parser("serve", help="Открыть локальный интерфейс данных и JSON-прогноза")
     serve.add_argument("--port", type=int, default=8033)
     demo = commands.add_parser("generate-demo", help="Создать явно помеченную симуляцию для разработки")
@@ -85,6 +90,9 @@ def main(argv=None):
         elif args.command == "generate-demo":
             from .simulation import generate_demo
             report = generate_demo(args.output, employees=args.employees, periods=args.periods, seed=args.seed)
+        elif args.command == "probabilities":
+            from .probabilities import run_probability_analysis
+            report = run_probability_analysis(args.splits, args.experiment, args.output)
         elif args.command == "importance":
             from .importance import run_importance
             report = run_importance(args.splits, args.experiment, args.output, args.repeats, args.seed)

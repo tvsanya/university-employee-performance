@@ -78,6 +78,11 @@ def main(argv=None):
     uncertainty.add_argument("--repeats", type=int, default=500)
     uncertainty.add_argument("--seed", type=int, default=42)
     uncertainty.add_argument("--report", type=Path)
+    distribution = commands.add_parser("distribution", help="Сравнить распределения train/validation без цели и test")
+    distribution.add_argument("--splits", required=True, type=Path)
+    distribution.add_argument("--experiment", required=True, type=Path)
+    distribution.add_argument("--output", required=True, type=Path)
+    distribution.add_argument("--report", type=Path)
     serve = commands.add_parser("serve", help="Открыть локальный интерфейс данных и JSON-прогноза")
     serve.add_argument("--port", type=int, default=8033)
     demo = commands.add_parser("generate-demo", help="Создать явно помеченную симуляцию для разработки")
@@ -104,6 +109,9 @@ def main(argv=None):
         elif args.command == "generate-demo":
             from .simulation import generate_demo
             report = generate_demo(args.output, employees=args.employees, periods=args.periods, seed=args.seed)
+        elif args.command == "distribution":
+            from .drift import run_distribution_shift
+            report = run_distribution_shift(args.splits, args.experiment, args.output)
         elif args.command == "uncertainty":
             from .uncertainty import run_uncertainty
             report = run_uncertainty(args.splits, args.experiment, args.output, args.repeats, args.seed)

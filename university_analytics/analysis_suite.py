@@ -2,6 +2,8 @@
 from pathlib import Path
 from .analysis_context import save_analysis, validation_context
 from .data import DatasetError
+from .drift import distribution_shift
+from .baselines import load_split_bundle
 from .importance import permutation_importance
 from .preprocessing import target_vector
 from .probabilities import probability_quality
@@ -12,7 +14,9 @@ from .uncertainty import grouped_bootstrap
 def run_analysis_suite(split_directory,experiment_directory,destination):
     dataset,config,model,provenance = validation_context(split_directory,experiment_directory)
     truth = target_vector(dataset,config)
+    reference = load_split_bundle(split_directory,config)[0]["train"]
     tasks = {
+        "distribution":lambda:distribution_shift(reference,dataset,config),
         "importance":lambda:permutation_importance(dataset,config,model,repeats=3,seed=config.seed),
         "probabilities":lambda:probability_quality(truth,model.predict_proba(dataset),model.classes),
         "robustness":lambda:robustness_analysis(dataset,config,model,repeats=2,seed=config.seed),

@@ -1,4 +1,8 @@
 import unittest
+import tempfile
+import json
+from pathlib import Path
+from university_analytics.analysis_context import validation_context
 import numpy as np
 from university_analytics.data import Dataset, DatasetError
 from university_analytics.experiment import ExperimentConfig
@@ -31,3 +35,9 @@ class ImportanceTests(unittest.TestCase):
         data,config=self.fixture()
         for repeats,seed in [(0,42),(21,42),(5,-1),(True,42)]:
             with self.assertRaises(DatasetError):permutation_importance(data,config,SignalModel(),repeats,seed)
+
+    def test_analysis_model_path_cannot_escape_experiment(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder)
+            (root/'metrics.json').write_text(json.dumps({'portable_artifact':{'file':'../model.json'}}))
+            with self.assertRaises(DatasetError):validation_context(root/'split',root)

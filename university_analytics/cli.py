@@ -71,6 +71,13 @@ def main(argv=None):
     robustness.add_argument("--repeats", type=int, default=3)
     robustness.add_argument("--seed", type=int, default=42)
     robustness.add_argument("--report", type=Path)
+    uncertainty = commands.add_parser("uncertainty", help="Оценить групповые bootstrap-интервалы на validation")
+    uncertainty.add_argument("--splits", required=True, type=Path)
+    uncertainty.add_argument("--experiment", required=True, type=Path)
+    uncertainty.add_argument("--output", required=True, type=Path)
+    uncertainty.add_argument("--repeats", type=int, default=500)
+    uncertainty.add_argument("--seed", type=int, default=42)
+    uncertainty.add_argument("--report", type=Path)
     serve = commands.add_parser("serve", help="Открыть локальный интерфейс данных и JSON-прогноза")
     serve.add_argument("--port", type=int, default=8033)
     demo = commands.add_parser("generate-demo", help="Создать явно помеченную симуляцию для разработки")
@@ -97,6 +104,9 @@ def main(argv=None):
         elif args.command == "generate-demo":
             from .simulation import generate_demo
             report = generate_demo(args.output, employees=args.employees, periods=args.periods, seed=args.seed)
+        elif args.command == "uncertainty":
+            from .uncertainty import run_uncertainty
+            report = run_uncertainty(args.splits, args.experiment, args.output, args.repeats, args.seed)
         elif args.command == "robustness":
             from .robustness import run_robustness
             report = run_robustness(args.splits, args.experiment, args.output, args.repeats, args.seed)

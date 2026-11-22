@@ -1,0 +1,148 @@
+{
+  "method": "AST statements excluding docstrings; definitions and control statements included",
+  "excluded": [
+    "tests",
+    "scripts",
+    "notebooks",
+    "HTML",
+    "JavaScript",
+    "data",
+    "serialized weights",
+    "comments",
+    "blank lines"
+  ],
+  "files": [
+    {
+      "file": "main.py",
+      "logical_statements": 3,
+      "nonempty_code_lines": 3
+    },
+    {
+      "file": "__init__.py",
+      "logical_statements": 1,
+      "nonempty_code_lines": 1
+    },
+    {
+      "file": "analysis_context.py",
+      "logical_statements": 55,
+      "nonempty_code_lines": 57
+    },
+    {
+      "file": "analysis_suite.py",
+      "logical_statements": 20,
+      "nonempty_code_lines": 26
+    },
+    {
+      "file": "baselines.py",
+      "logical_statements": 114,
+      "nonempty_code_lines": 125
+    },
+    {
+      "file": "cli.py",
+      "logical_statements": 151,
+      "nonempty_code_lines": 155
+    },
+    {
+      "file": "comparison.py",
+      "logical_statements": 68,
+      "nonempty_code_lines": 74
+    },
+    {
+      "file": "data.py",
+      "logical_statements": 81,
+      "nonempty_code_lines": 92
+    },
+    {
+      "file": "diagnostics.py",
+      "logical_statements": 67,
+      "nonempty_code_lines": 79
+    },
+    {
+      "file": "experiment.py",
+      "logical_statements": 68,
+      "nonempty_code_lines": 74
+    },
+    {
+      "file": "gui.py",
+      "logical_statements": 172,
+      "nonempty_code_lines": 205
+    },
+    {
+      "file": "importance.py",
+      "logical_statements": 43,
+      "nonempty_code_lines": 45
+    },
+    {
+      "file": "job_artifacts.py",
+      "logical_statements": 49,
+      "nonempty_code_lines": 60
+    },
+    {
+      "file": "jobs.py",
+      "logical_statements": 151,
+      "nonempty_code_lines": 166
+    },
+    {
+      "file": "neural.py",
+      "logical_statements": 87,
+      "nonempty_code_lines": 101
+    },
+    {
+      "file": "plots.py",
+      "logical_statements": 88,
+      "nonempty_code_lines": 92
+    },
+    {
+      "file": "portable.py",
+      "logical_statements": 149,
+      "nonempty_code_lines": 164
+    },
+    {
+      "file": "prediction.py",
+      "logical_statements": 41,
+      "nonempty_code_lines": 46
+    },
+    {
+      "file": "preprocessing.py",
+      "logical_statements": 62,
+      "nonempty_code_lines": 71
+    },
+    {
+      "file": "probabilities.py",
+      "logical_statements": 66,
+      "nonempty_code_lines": 72
+    },
+    {
+      "file": "quality.py",
+      "logical_statements": 53,
+      "nonempty_code_lines": 63
+    },
+    {
+      "file": "robustness.py",
+      "logical_statements": 81,
+      "nonempty_code_lines": 85
+    },
+    {
+      "file": "simulation.py",
+      "logical_statements": 53,
+      "nonempty_code_lines": 72
+    },
+    {
+      "file": "splitting.py",
+      "logical_statements": 65,
+      "nonempty_code_lines": 85
+    },
+    {
+      "file": "tuning.py",
+      "logical_statements": 68,
+      "nonempty_code_lines": 82
+    },
+    {
+      "file": "uncertainty.py",
+      "logical_statements": 61,
+      "nonempty_code_lines": 65
+    }
+  ],
+  "logical_statements": 1917,
+  "nonempty_code_lines": 2160
+}

@@ -14,7 +14,7 @@ class JobNotReady(RuntimeError):
 ARTIFACT_LABELS = {"model.json": "Выбранная модель JSON", "comparison.json": "Сравнение JSON",
     "comparison.csv": "Сравнение CSV", "history.json": "История нейросети JSON",
     "diagnostics.json": "Ошибки выбранной модели JSON", "training.png": "Обучение нейросети PNG",
-    "neural-confusion.png": "Матрица ошибок нейросети PNG", "experiment.zip": "Полный эксперимент с данными ZIP"}
+    "neural-confusion.png": "Матрица ошибок нейросети PNG", "importance.json": "Важность признаков (validation)", "probabilities.json": "Вероятности (validation)", "robustness.json": "Устойчивость (validation)", "uncertainty.json": "Групповые интервалы (validation)", "experiment.zip": "Полный эксперимент с данными ZIP"}
 
 
 def completed_job(manager, job_id, owner):
@@ -32,6 +32,7 @@ def artifact_path(manager, job_id, owner, name):
     mapping = {"model.json": f"{family}/model.json", "comparison.json": "comparison/comparison.json",
         "comparison.csv": "comparison/comparison.csv", "history.json": "neural/training.json",
         "diagnostics.json": "diagnostics-selected/diagnostics.json" if family == "baseline" else "diagnostics-neural/diagnostics.json",
+        "importance.json": "analysis/importance/analysis.json", "probabilities.json": "analysis/probabilities/analysis.json", "robustness.json": "analysis/robustness/analysis.json", "uncertainty.json": "analysis/uncertainty/analysis.json",
         "training.png": "figures/training.png", "neural-confusion.png": "figures/test-confusion.png"}
     if name not in mapping:
         raise JobNotFound
@@ -44,7 +45,7 @@ def artifact_path(manager, job_id, owner, name):
 def experiment_archive(manager, job_id, owner):
     directory, state = completed_job(manager, job_id, owner)
     files = [directory/"input.csv", directory/"config.json"]
-    for folder in ["splits", "baseline", "neural", "comparison", "diagnostics-neural", "diagnostics-selected", "figures"]:
+    for folder in ["splits", "baseline", "neural", "comparison", "diagnostics-neural", "diagnostics-selected", "figures", "analysis"]:
         files += sorted((directory/folder).rglob("*"))
     output, hashes = io.BytesIO(), {}
     with ZipFile(output, "w", compression=ZIP_DEFLATED) as archive:

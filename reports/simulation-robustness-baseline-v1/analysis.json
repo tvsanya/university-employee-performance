@@ -1,0 +1,534 @@
+{
+  "partition": "validation",
+  "rows": 450,
+  "source_sha256": "698dbfc7709f492a58f8ee1dcba83d8355173ad0ebd0ae8d257e49c5dd1e75af",
+  "split_manifest_sha256": "7ac643421eb3b8b655b1f7344b5e1687960e62005cb3c00f83d878ccaebff45e",
+  "model_sha256": "43088d11acd7029e95dc8ad7424eb5d9a1a020c61a176f0f4524636bfcb1af4b",
+  "data_origin": "synthetic",
+  "intended_use": "development_demo_only",
+  "analysis": "robustness",
+  "baseline": {
+    "accuracy": 0.8022222222222222,
+    "macro_f1": 0.7976393285100158
+  },
+  "seed": 42,
+  "repeats": 3,
+  "scenarios": [
+    {
+      "scenario": "random_missing_fraction",
+      "level": 0.05,
+      "repeat": 0,
+      "changed_cells": 235,
+      "metrics": {
+        "accuracy": 0.8044444444444444,
+        "macro_f1": 0.7998853872920068
+      },
+      "macro_f1_drop": -0.0022460587819909117,
+      "prediction_flip_rate": 0.03777777777777778,
+      "mean_probability_l1": 0.0675057012201286
+    },
+    {
+      "scenario": "random_missing_fraction",
+      "level": 0.05,
+      "repeat": 1,
+      "changed_cells": 257,
+      "metrics": {
+        "accuracy": 0.7866666666666666,
+        "macro_f1": 0.7794061430521598
+      },
+      "macro_f1_drop": 0.018233185457856016,
+      "prediction_flip_rate": 0.051111111111111114,
+      "mean_probability_l1": 0.0784046743662706
+    },
+    {
+      "scenario": "random_missing_fraction",
+      "level": 0.05,
+      "repeat": 2,
+      "changed_cells": 223,
+      "metrics": {
+        "accuracy": 0.7844444444444445,
+        "macro_f1": 0.7783105783105783
+      },
+      "macro_f1_drop": 0.019328750199437583,
+      "prediction_flip_rate": 0.04666666666666667,
+      "mean_probability_l1": 0.07588204073392862
+    },
+    {
+      "scenario": "random_missing_fraction",
+      "level": 0.15,
+      "repeat": 0,
+      "changed_cells": 740,
+      "metrics": {
+        "accuracy": 0.7555555555555555,
+        "macro_f1": 0.7428371511312907
+      },
+      "macro_f1_drop": 0.05480217737872517,
+      "prediction_flip_rate": 0.14,
+      "mean_probability_l1": 0.21415479065252074
+    },
+    {
+      "scenario": "random_missing_fraction",
+      "level": 0.15,
+      "repeat": 1,
+      "changed_cells": 739,
+      "metrics": {
+        "accuracy": 0.7688888888888888,
+        "macro_f1": 0.7605209341262867
+      },
+      "macro_f1_drop": 0.0371183943837291,
+      "prediction_flip_rate": 0.13111111111111112,
+      "mean_probability_l1": 0.22014017165610122
+    },
+    {
+      "scenario": "random_missing_fraction",
+      "level": 0.15,
+      "repeat": 2,
+      "changed_cells": 703,
+      "metrics": {
+        "accuracy": 0.7666666666666667,
+        "macro_f1": 0.7598525429365512
+      },
+      "macro_f1_drop": 0.0377867855734646,
+      "prediction_flip_rate": 0.10666666666666667,
+      "mean_probability_l1": 0.21070127757454368
+    },
+    {
+      "scenario": "random_missing_fraction",
+      "level": 0.3,
+      "repeat": 0,
+      "changed_cells": 1504,
+      "metrics": {
+        "accuracy": 0.7288888888888889,
+        "macro_f1": 0.6952137120939709
+      },
+      "macro_f1_drop": 0.10242561641604497,
+      "prediction_flip_rate": 0.22,
+      "mean_probability_l1": 0.3620729568470372
+    },
+    {
+      "scenario": "random_missing_fraction",
+      "level": 0.3,
+      "repeat": 1,
+      "changed_cells": 1445,
+      "metrics": {
+        "accuracy": 0.7333333333333333,
+        "macro_f1": 0.7105943393948739
+      },
+      "macro_f1_drop": 0.08704498911514191,
+      "prediction_flip_rate": 0.2288888888888889,
+      "mean_probability_l1": 0.39549009379880556
+    },
+    {
+      "scenario": "random_missing_fraction",
+      "level": 0.3,
+      "repeat": 2,
+      "changed_cells": 1465,
+      "metrics": {
+        "accuracy": 0.74,
+        "macro_f1": 0.7170765997440012
+      },
+      "macro_f1_drop": 0.08056272876601467,
+      "prediction_flip_rate": 0.21333333333333335,
+      "mean_probability_l1": 0.37659818937213035
+    },
+    {
+      "scenario": "numeric_noise_train_scale",
+      "level": 0.05,
+      "repeat": 0,
+      "changed_cells": 3987,
+      "metrics": {
+        "accuracy": 0.8,
+        "macro_f1": 0.7956043956043956
+      },
+      "macro_f1_drop": 0.0020349329056202903,
+      "prediction_flip_rate": 0.028888888888888888,
+      "mean_probability_l1": 0.033295279792157295
+    },
+    {
+      "scenario": "numeric_noise_train_scale",
+      "level": 0.05,
+      "repeat": 1,
+      "changed_cells": 3987,
+      "metrics": {
+        "accuracy": 0.8044444444444444,
+        "macro_f1": 0.8024629369957522
+      },
+      "macro_f1_drop": -0.004823608485736375,
+      "prediction_flip_rate": 0.02,
+      "mean_probability_l1": 0.03393632138927333
+    },
+    {
+      "scenario": "numeric_noise_train_scale",
+      "level": 0.05,
+      "repeat": 2,
+      "changed_cells": 3987,
+      "metrics": {
+        "accuracy": 0.7977777777777778,
+        "macro_f1": 0.7943685803972101
+      },
+      "macro_f1_drop": 0.003270748112805699,
+      "prediction_flip_rate": 0.022222222222222223,
+      "mean_probability_l1": 0.03266858220464991
+    },
+    {
+      "scenario": "numeric_noise_train_scale",
+      "level": 0.15,
+      "repeat": 0,
+      "changed_cells": 3987,
+      "metrics": {
+        "accuracy": 0.7822222222222223,
+        "macro_f1": 0.7809355484859197
+      },
+      "macro_f1_drop": 0.016703780024096115,
+      "prediction_flip_rate": 0.06444444444444444,
+      "mean_probability_l1": 0.0992866131771219
+    },
+    {
+      "scenario": "numeric_noise_train_scale",
+      "level": 0.15,
+      "repeat": 1,
+      "changed_cells": 3987,
+      "metrics": {
+        "accuracy": 0.7866666666666666,
+        "macro_f1": 0.7831325792399407
+      },
+      "macro_f1_drop": 0.014506749270075114,
+      "prediction_flip_rate": 0.042222222222222223,
+      "mean_probability_l1": 0.09384014971673312
+    },
+    {
+      "scenario": "numeric_noise_train_scale",
+      "level": 0.15,
+      "repeat": 2,
+      "changed_cells": 3987,
+      "metrics": {
+        "accuracy": 0.7955555555555556,
+        "macro_f1": 0.793875984295146
+      },
+      "macro_f1_drop": 0.0037633442148697904,
+      "prediction_flip_rate": 0.05555555555555555,
+      "mean_probability_l1": 0.10072894509693069
+    },
+    {
+      "scenario": "numeric_noise_train_scale",
+      "level": 0.3,
+      "repeat": 0,
+      "changed_cells": 3987,
+      "metrics": {
+        "accuracy": 0.7622222222222222,
+        "macro_f1": 0.758854482588713
+      },
+      "macro_f1_drop": 0.038784845921302824,
+      "prediction_flip_rate": 0.12444444444444444,
+      "mean_probability_l1": 0.21037857863023343
+    },
+    {
+      "scenario": "numeric_noise_train_scale",
+      "level": 0.3,
+      "repeat": 1,
+      "changed_cells": 3987,
+      "metrics": {
+        "accuracy": 0.7977777777777778,
+        "macro_f1": 0.7935412902667238
+      },
+      "macro_f1_drop": 0.004098038243292024,
+      "prediction_flip_rate": 0.08888888888888889,
+      "mean_probability_l1": 0.1866567113130341
+    },
+    {
+      "scenario": "numeric_noise_train_scale",
+      "level": 0.3,
+      "repeat": 2,
+      "changed_cells": 3987,
+      "metrics": {
+        "accuracy": 0.7644444444444445,
+        "macro_f1": 0.7579613995917868
+      },
+      "macro_f1_drop": 0.03967792891822908,
+      "prediction_flip_rate": 0.11333333333333333,
+      "mean_probability_l1": 0.18095924461249713
+    },
+    {
+      "scenario": "complete_feature_missing",
+      "level": "employment_fraction",
+      "repeat": 0,
+      "changed_cells": 450,
+      "metrics": {
+        "accuracy": 0.7955555555555556,
+        "macro_f1": 0.7929176560255621
+      },
+      "macro_f1_drop": 0.004721672484453765,
+      "prediction_flip_rate": 0.024444444444444446,
+      "mean_probability_l1": 0.04048845425824714
+    },
+    {
+      "scenario": "complete_feature_missing",
+      "level": "planned_teaching_hours",
+      "repeat": 0,
+      "changed_cells": 450,
+      "metrics": {
+        "accuracy": 0.6866666666666666,
+        "macro_f1": 0.6874650741671259
+      },
+      "macro_f1_drop": 0.11017425434288997,
+      "prediction_flip_rate": 0.21555555555555556,
+      "mean_probability_l1": 0.333703473211514
+    },
+    {
+      "scenario": "complete_feature_missing",
+      "level": "teaching_hours",
+      "repeat": 0,
+      "changed_cells": 450,
+      "metrics": {
+        "accuracy": 0.7044444444444444,
+        "macro_f1": 0.6981408622835538
+      },
+      "macro_f1_drop": 0.09949846622646208,
+      "prediction_flip_rate": 0.23555555555555555,
+      "mean_probability_l1": 0.4075154953786577
+    },
+    {
+      "scenario": "complete_feature_missing",
+      "level": "student_feedback_avg",
+      "repeat": 0,
+      "changed_cells": 442,
+      "metrics": {
+        "accuracy": 0.7977777777777778,
+        "macro_f1": 0.780248436670254
+      },
+      "macro_f1_drop": 0.017390891839761835,
+      "prediction_flip_rate": 0.13333333333333333,
+      "mean_probability_l1": 0.24236288885522647
+    },
+    {
+      "scenario": "complete_feature_missing",
+      "level": "course_completion_rate",
+      "repeat": 0,
+      "changed_cells": 442,
+      "metrics": {
+        "accuracy": 0.7955555555555556,
+        "macro_f1": 0.7756728591578858
+      },
+      "macro_f1_drop": 0.02196646935213009,
+      "prediction_flip_rate": 0.13555555555555557,
+      "mean_probability_l1": 0.22834101480525223
+    },
+    {
+      "scenario": "complete_feature_missing",
+      "level": "publication_count",
+      "repeat": 0,
+      "changed_cells": 439,
+      "metrics": {
+        "accuracy": 0.8,
+        "macro_f1": 0.7938246442108273
+      },
+      "macro_f1_drop": 0.00381468429918852,
+      "prediction_flip_rate": 0.042222222222222223,
+      "mean_probability_l1": 0.07217665908604459
+    },
+    {
+      "scenario": "complete_feature_missing",
+      "level": "training_hours",
+      "repeat": 0,
+      "changed_cells": 436,
+      "metrics": {
+        "accuracy": 0.8222222222222222,
+        "macro_f1": 0.8165291685034742
+      },
+      "macro_f1_drop": -0.01888983999345839,
+      "prediction_flip_rate": 0.04666666666666667,
+      "mean_probability_l1": 0.08767844101791579
+    },
+    {
+      "scenario": "complete_feature_missing",
+      "level": "admin_delay_days",
+      "repeat": 0,
+      "changed_cells": 440,
+      "metrics": {
+        "accuracy": 0.8044444444444444,
+        "macro_f1": 0.7924648647362114
+      },
+      "macro_f1_drop": 0.005174463773804483,
+      "prediction_flip_rate": 0.042222222222222223,
+      "mean_probability_l1": 0.0853206274322437
+    },
+    {
+      "scenario": "complete_feature_missing",
+      "level": "digital_activity_rate",
+      "repeat": 0,
+      "changed_cells": 438,
+      "metrics": {
+        "accuracy": 0.8088888888888889,
+        "macro_f1": 0.7941325471658153
+      },
+      "macro_f1_drop": 0.0035067813442005713,
+      "prediction_flip_rate": 0.07333333333333333,
+      "mean_probability_l1": 0.14958143614585642
+    },
+    {
+      "scenario": "complete_feature_missing",
+      "level": "department",
+      "repeat": 0,
+      "changed_cells": 450,
+      "metrics": {
+        "accuracy": 0.8022222222222222,
+        "macro_f1": 0.8000062096338197
+      },
+      "macro_f1_drop": -0.002366881123803899,
+      "prediction_flip_rate": 0.017777777777777778,
+      "mean_probability_l1": 0.030080450162154597
+    },
+    {
+      "scenario": "complete_feature_missing",
+      "level": "position",
+      "repeat": 0,
+      "changed_cells": 450,
+      "metrics": {
+        "accuracy": 0.8066666666666666,
+        "macro_f1": 0.8036985520395685
+      },
+      "macro_f1_drop": -0.006059223529552682,
+      "prediction_flip_rate": 0.017777777777777778,
+      "mean_probability_l1": 0.03908262549527057
+    }
+  ],
+  "summary": [
+    {
+      "scenario": "random_missing_fraction",
+      "level": 0.05,
+      "repeats": 3,
+      "mean_macro_f1_drop": 0.011771958958434229,
+      "std_macro_f1_drop": 0.012152311778172277,
+      "mean_prediction_flip_rate": 0.04518518518518519
+    },
+    {
+      "scenario": "random_missing_fraction",
+      "level": 0.15,
+      "repeats": 3,
+      "mean_macro_f1_drop": 0.043235785778639624,
+      "std_macro_f1_drop": 0.010022362380223842,
+      "mean_prediction_flip_rate": 0.12592592592592594
+    },
+    {
+      "scenario": "random_missing_fraction",
+      "level": 0.3,
+      "repeats": 3,
+      "mean_macro_f1_drop": 0.09001111143240052,
+      "std_macro_f1_drop": 0.011229197446842164,
+      "mean_prediction_flip_rate": 0.22074074074074077
+    },
+    {
+      "scenario": "numeric_noise_train_scale",
+      "level": 0.05,
+      "repeats": 3,
+      "mean_macro_f1_drop": 0.00016069084422987157,
+      "std_macro_f1_drop": 0.004360532039167257,
+      "mean_prediction_flip_rate": 0.023703703703703703
+    },
+    {
+      "scenario": "numeric_noise_train_scale",
+      "level": 0.15,
+      "repeats": 3,
+      "mean_macro_f1_drop": 0.011657957836347007,
+      "std_macro_f1_drop": 0.006924624842389567,
+      "mean_prediction_flip_rate": 0.05407407407407407
+    },
+    {
+      "scenario": "numeric_noise_train_scale",
+      "level": 0.3,
+      "repeats": 3,
+      "mean_macro_f1_drop": 0.027520271027607974,
+      "std_macro_f1_drop": 0.02028916313606511,
+      "mean_prediction_flip_rate": 0.10888888888888888
+    },
+    {
+      "scenario": "complete_feature_missing",
+      "level": "employment_fraction",
+      "repeats": 1,
+      "mean_macro_f1_drop": 0.004721672484453765,
+      "std_macro_f1_drop": 0.0,
+      "mean_prediction_flip_rate": 0.024444444444444446
+    },
+    {
+      "scenario": "complete_feature_missing",
+      "level": "planned_teaching_hours",
+      "repeats": 1,
+      "mean_macro_f1_drop": 0.11017425434288997,
+      "std_macro_f1_drop": 0.0,
+      "mean_prediction_flip_rate": 0.21555555555555556
+    },
+    {
+      "scenario": "complete_feature_missing",
+      "level": "teaching_hours",
+      "repeats": 1,
+      "mean_macro_f1_drop": 0.09949846622646208,
+      "std_macro_f1_drop": 0.0,
+      "mean_prediction_flip_rate": 0.23555555555555555
+    },
+    {
+      "scenario": "complete_feature_missing",
+      "level": "student_feedback_avg",
+      "repeats": 1,
+      "mean_macro_f1_drop": 0.017390891839761835,
+      "std_macro_f1_drop": 0.0,
+      "mean_prediction_flip_rate": 0.13333333333333333
+    },
+    {
+      "scenario": "complete_feature_missing",
+      "level": "course_completion_rate",
+      "repeats": 1,
+      "mean_macro_f1_drop": 0.02196646935213009,
+      "std_macro_f1_drop": 0.0,
+      "mean_prediction_flip_rate": 0.13555555555555557
+    },
+    {
+      "scenario": "complete_feature_missing",
+      "level": "publication_count",
+      "repeats": 1,
+      "mean_macro_f1_drop": 0.00381468429918852,
+      "std_macro_f1_drop": 0.0,
+      "mean_prediction_flip_rate": 0.042222222222222223
+    },
+    {
+      "scenario": "complete_feature_missing",
+      "level": "training_hours",
+      "repeats": 1,
+      "mean_macro_f1_drop": -0.01888983999345839,
+      "std_macro_f1_drop": 0.0,
+      "mean_prediction_flip_rate": 0.04666666666666667
+    },
+    {
+      "scenario": "complete_feature_missing",
+      "level": "admin_delay_days",
+      "repeats": 1,
+      "mean_macro_f1_drop": 0.005174463773804483,
+      "std_macro_f1_drop": 0.0,
+      "mean_prediction_flip_rate": 0.042222222222222223
+    },
+    {
+      "scenario": "complete_feature_missing",
+      "level": "digital_activity_rate",
+      "repeats": 1,
+      "mean_macro_f1_drop": 0.0035067813442005713,
+      "std_macro_f1_drop": 0.0,
+      "mean_prediction_flip_rate": 0.07333333333333333
+    },
+    {
+      "scenario": "complete_feature_missing",
+      "level": "department",
+      "repeats": 1,
+      "mean_macro_f1_drop": -0.002366881123803899,
+      "std_macro_f1_drop": 0.0,
+      "mean_prediction_flip_rate": 0.017777777777777778
+    },
+    {
+      "scenario": "complete_feature_missing",
+      "level": "position",
+      "repeats": 1,
+      "mean_macro_f1_drop": -0.006059223529552682,
+      "std_macro_f1_drop": 0.0,
+      "mean_prediction_flip_rate": 0.017777777777777778
+    }
+  ],
+  "limitation": "Искусственные пропуски и шум используют сохранённый train-масштаб, без переобучения. Шум может выходить за предметные диапазоны; это стресс-тест модели, не прогноз реальных изменений сотрудников. Разброс повторов не является доверительным интервалом."
+}

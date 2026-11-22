@@ -52,6 +52,13 @@ def main(argv=None):
     plot.add_argument("--diagnostics", required=True, type=Path)
     plot.add_argument("--output", required=True, type=Path)
     plot.add_argument("--report", type=Path)
+    importance = commands.add_parser("importance", help="Оценить важность признаков на validation без обучения")
+    importance.add_argument("--splits", required=True, type=Path)
+    importance.add_argument("--experiment", required=True, type=Path)
+    importance.add_argument("--output", required=True, type=Path)
+    importance.add_argument("--repeats", type=int, default=5)
+    importance.add_argument("--seed", type=int, default=42)
+    importance.add_argument("--report", type=Path)
     serve = commands.add_parser("serve", help="Открыть локальный интерфейс данных и JSON-прогноза")
     serve.add_argument("--port", type=int, default=8033)
     demo = commands.add_parser("generate-demo", help="Создать явно помеченную симуляцию для разработки")
@@ -78,6 +85,9 @@ def main(argv=None):
         elif args.command == "generate-demo":
             from .simulation import generate_demo
             report = generate_demo(args.output, employees=args.employees, periods=args.periods, seed=args.seed)
+        elif args.command == "importance":
+            from .importance import run_importance
+            report = run_importance(args.splits, args.experiment, args.output, args.repeats, args.seed)
         elif args.command == "predict":
             from .prediction import run_prediction
             report = run_prediction(args.model, args.source, args.output)

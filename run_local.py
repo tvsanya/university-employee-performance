@@ -7,11 +7,11 @@ BASE_DIR = Path(__file__).resolve().parent
 PORT = 8033
 
 
-def main():
+def main(argv=None):
     parser = argparse.ArgumentParser(description="Локальный интерфейс анализа данных")
     parser.add_argument("--check", action="store_true", help="Проверить запуск интерфейса без сервера")
     parser.add_argument("--port", type=int, default=PORT, help="Локальный порт приложения")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     if not 1024 <= args.port <= 65535:
         parser.error("Порт должен быть от 1024 до 65535")
     os.chdir(BASE_DIR)

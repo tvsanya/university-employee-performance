@@ -110,7 +110,11 @@ def main(argv=None):
             if not 1024 <= args.port <= 65535:
                 parser.error("Порт должен быть от 1024 до 65535.")
             from .gui import create_app
-            create_app().run(host="127.0.0.1", port=args.port, debug=False, use_reloader=False)
+            app = create_app()
+            try:
+                app.run(host="127.0.0.1", port=args.port, debug=False, use_reloader=False)
+            finally:
+                app.extensions["training_manager"].close()
             return 0
         elif args.command == "generate-demo":
             from .simulation import generate_demo

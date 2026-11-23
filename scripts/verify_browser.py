@@ -44,7 +44,7 @@ def verify(app_python, output):
         with socket.socket() as listener:listener.bind(('127.0.0.1',0));port=listener.getsockname()[1]
         url=f'http://127.0.0.1:{port}'
         with (target/'server.log').open('w') as log:
-            server=subprocess.Popen([str(app_python),str(target/'run_local.py'),'--port',str(port)],cwd=root.parent,env=env,stdout=log,stderr=log)
+            server=subprocess.Popen([str(app_python),str(target/'main.py'),'--port',str(port)],cwd=root.parent,env=env,stdout=log,stderr=log)
             try:
                 deadline=time.monotonic()+30
                 while True:

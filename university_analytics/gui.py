@@ -173,7 +173,11 @@ def create_app(repository=None):
                     raise DatasetError("Повреждены сведения о модели.") from exc
                 if hashlib.sha256(model_path.read_bytes()).hexdigest() != metadata.get("portable_artifact", {}).get("sha256"):
                     raise DatasetError("Нарушена целостность сохранённой модели.")
-            report = run_prediction(model_path, str(source), root/"result", max_rows=20000, max_classes=20)
+            try:
+                review_threshold = float(request.form.get("review_threshold", ".7"))
+            except ValueError as exc:
+                raise DatasetError("Укажите числовой порог просмотра от 0 до 1.") from exc
+            report = run_prediction(model_path, str(source), root/"result", max_rows=20000, max_classes=20, review_threshold=review_threshold)
             contents = (root/"result/predictions.csv").read_text(encoding="utf-8")
             preview = list(islice(csv.DictReader(io.StringIO(contents)), 30))
             return jsonify(report=report, preview=preview, csv=contents)

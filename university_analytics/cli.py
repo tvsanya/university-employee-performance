@@ -38,6 +38,7 @@ def main(argv=None):
     predict.add_argument("--model", required=True, type=Path)
     predict.add_argument("--output", required=True, type=Path, help="Новый каталог для predictions.csv и report.json")
     predict.add_argument("--report", type=Path)
+    predict.add_argument("--review-threshold", type=float, default=.7, help="Флаг просмотра при max_probability ниже порога (0–1)")
     diagnose = commands.add_parser("diagnose", help="Разобрать ошибки сохранённой JSON-сети без обучения")
     diagnose.add_argument("--splits", required=True, type=Path)
     diagnose.add_argument("--experiment", required=True, type=Path)
@@ -126,7 +127,7 @@ def main(argv=None):
             report = run_importance(args.splits, args.experiment, args.output, args.repeats, args.seed)
         elif args.command == "predict":
             from .prediction import run_prediction
-            report = run_prediction(args.model, args.source, args.output)
+            report = run_prediction(args.model, args.source, args.output, review_threshold=args.review_threshold)
         elif args.command == "diagnose":
             from .diagnostics import run_diagnostics
             report = run_diagnostics(args.splits, args.experiment, args.output)

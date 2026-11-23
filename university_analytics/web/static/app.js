@@ -36,7 +36,8 @@ async function run(action) {
       note(data.report.intended_use === "development_demo_only" ? "Демонстрационная модель на симуляции. Результаты не являются реальной оценкой сотрудников." : "Пригодность модели для реальных решений требует отдельной проверки.");
       if (data.preview.length) {
         const keys = Object.keys(data.preview[0]);
-        const names = {source_row: "Строка CSV", predicted_class: "Прогноз"};
+        note(`Помечено для просмотра: ${data.report.review_policy.review_rows}. Порог: ${data.report.review_policy.threshold}.`);
+        const names = {source_row: "Строка CSV", predicted_class: "Прогноз", max_probability: "Максимальная вероятность", normalized_entropy: "Энтропия (0–1)", review_recommended: "Просмотр рекомендован"};
         const labels = keys.map(key => names[key] || (data.report.probability_columns[key] ? "Вероятность: " + data.report.probability_columns[key] : key));
         table(document.querySelector("#table"), labels, data.preview.map(row => keys.map(key => row[key])));
       }

@@ -1,0 +1,41 @@
+{
+  "partition": "validation",
+  "rows": 450,
+  "source_sha256": "698dbfc7709f492a58f8ee1dcba83d8355173ad0ebd0ae8d257e49c5dd1e75af",
+  "split_manifest_sha256": "7ac643421eb3b8b655b1f7344b5e1687960e62005cb3c00f83d878ccaebff45e",
+  "model_sha256": "43088d11acd7029e95dc8ad7424eb5d9a1a020c61a176f0f4524636bfcb1af4b",
+  "data_origin": "synthetic",
+  "intended_use": "development_demo_only",
+  "schema_version": 1,
+  "status": "completed",
+  "analyses": {
+    "distribution": {
+      "status": "completed",
+      "file": "distribution/analysis.json"
+    },
+    "importance": {
+      "status": "completed",
+      "file": "importance/analysis.json"
+    },
+    "probabilities": {
+      "status": "completed",
+      "file": "probabilities/analysis.json"
+    },
+    "robustness": {
+      "status": "completed",
+      "file": "robustness/analysis.json"
+    },
+    "uncertainty": {
+      "status": "completed",
+      "file": "uncertainty/analysis.json"
+    }
+  },
+  "files": {
+    "distribution/analysis.json": "e42bfe34309efe034bc5cbe7587afec674766845ec95f78b5a7d73de829f1e2d",
+    "importance/analysis.json": "40c8d574ce23e771b4078c156de98a12de730f63c71e05af1be2665214af8ef8",
+    "probabilities/analysis.json": "f8738a8d72bd379b8a658f8316142cef098a77f37b8c6ce2c802b036cf1fc32e",
+    "research.md": "7d9eba01f6e4ccff58bfec4a95a36c923090167eca483ad21ee0a8cdc9e0685f",
+    "robustness/analysis.json": "a9816494c5f4541eb971e96ad31c8a5f4a17de11a0183afbc3cbbd22487f383d",
+    "uncertainty/analysis.json": "ed614faf83330c6eea217c63827dd1a235dd702d861f4e0dae330f2d3b7b5c29"
+  }
+}

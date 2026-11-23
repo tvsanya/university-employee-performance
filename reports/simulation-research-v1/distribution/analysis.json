@@ -1,0 +1,1012 @@
+{
+  "partition": "validation",
+  "rows": 450,
+  "source_sha256": "698dbfc7709f492a58f8ee1dcba83d8355173ad0ebd0ae8d257e49c5dd1e75af",
+  "split_manifest_sha256": "7ac643421eb3b8b655b1f7344b5e1687960e62005cb3c00f83d878ccaebff45e",
+  "model_sha256": "43088d11acd7029e95dc8ad7424eb5d9a1a020c61a176f0f4524636bfcb1af4b",
+  "data_origin": "synthetic",
+  "intended_use": "development_demo_only",
+  "analysis": "input_distribution_shift",
+  "reference_partition": "train",
+  "current_partition": "validation",
+  "reference_rows": 2100,
+  "current_rows": 450,
+  "binning": "train_quantiles",
+  "requested_bins": 10,
+  "features": [
+    {
+      "feature": "employment_fraction",
+      "kind": "numeric",
+      "reference_missing_rate": 0.0,
+      "current_missing_rate": 0.0,
+      "reference_nonmissing": 2100,
+      "current_nonmissing": 450,
+      "missing_rate_change": 0.0,
+      "ks_distance": 0.05238095238095242,
+      "reference_mean": 0.7535714285714286,
+      "current_mean": 0.7711111111111111,
+      "mean_change": 0.017539682539682522,
+      "reference_std": 0.20218828363883085,
+      "standardized_mean_change": 0.08674925284500498,
+      "outside_reference_range_rate": 0.0,
+      "psi": 0.01353931609510629,
+      "psi_smoothing_count": 0.5,
+      "histogram": [
+        {
+          "lower": null,
+          "upper": 0.5,
+          "reference_rows": 0,
+          "current_rows": 0,
+          "reference_smoothed_frequency": 0.0002378686964795433,
+          "current_smoothed_frequency": 0.0011061946902654867,
+          "psi_contribution": 0.0013345843787352213
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.75,
+          "reference_rows": 672,
+          "current_rows": 136,
+          "reference_smoothed_frequency": 0.3199333967649857,
+          "current_smoothed_frequency": 0.3019911504424779,
+          "psi_contribution": 0.0010355389937037663
+        },
+        {
+          "lower": 0.75,
+          "upper": 1.0,
+          "reference_rows": 726,
+          "current_rows": 140,
+          "reference_smoothed_frequency": 0.3456232159847764,
+          "current_smoothed_frequency": 0.3108407079646018,
+          "psi_contribution": 0.0036893327173819594
+        },
+        {
+          "lower": 1.0,
+          "upper": null,
+          "reference_rows": 702,
+          "current_rows": 174,
+          "reference_smoothed_frequency": 0.33420551855375835,
+          "current_smoothed_frequency": 0.3860619469026549,
+          "psi_contribution": 0.007479860005285342
+        }
+      ],
+      "status": "completed"
+    },
+    {
+      "feature": "planned_teaching_hours",
+      "kind": "numeric",
+      "reference_missing_rate": 0.0,
+      "current_missing_rate": 0.0,
+      "reference_nonmissing": 2100,
+      "current_nonmissing": 450,
+      "missing_rate_change": 0.0,
+      "ks_distance": 0.039047619047619,
+      "reference_mean": 135.6095238095238,
+      "current_mean": 138.72222222222223,
+      "mean_change": 3.112698412698421,
+      "reference_std": 44.67643359558663,
+      "standardized_mean_change": 0.06967204322696675,
+      "outside_reference_range_rate": 0.0,
+      "psi": 0.01304943420763887,
+      "psi_smoothing_count": 0.5,
+      "histogram": [
+        {
+          "lower": null,
+          "upper": 80.0,
+          "reference_rows": 206,
+          "current_rows": 44,
+          "reference_smoothed_frequency": 0.09809976247030879,
+          "current_smoothed_frequency": 0.0978021978021978,
+          "psi_contribution": 9.039705338498412e-07
+        },
+        {
+          "lower": 80.0,
+          "upper": 94.0,
+          "reference_rows": 196,
+          "current_rows": 36,
+          "reference_smoothed_frequency": 0.09334916864608075,
+          "current_smoothed_frequency": 0.08021978021978023,
+          "psi_contribution": 0.001990111255470629
+        },
+        {
+          "lower": 94.0,
+          "upper": 105.0,
+          "reference_rows": 214,
+          "current_rows": 41,
+          "reference_smoothed_frequency": 0.10190023752969121,
+          "current_smoothed_frequency": 0.0912087912087912,
+          "psi_contribution": 0.0011850718131196688
+        },
+        {
+          "lower": 105.0,
+          "upper": 116.0,
+          "reference_rows": 203,
+          "current_rows": 44,
+          "reference_smoothed_frequency": 0.09667458432304038,
+          "current_smoothed_frequency": 0.0978021978021978,
+          "psi_contribution": 1.3076382627947384e-05
+        },
+        {
+          "lower": 116.0,
+          "upper": 129.0,
+          "reference_rows": 215,
+          "current_rows": 43,
+          "reference_smoothed_frequency": 0.10237529691211401,
+          "current_smoothed_frequency": 0.0956043956043956,
+          "psi_contribution": 0.00046331005526283205
+        },
+        {
+          "lower": 129.0,
+          "upper": 145.0,
+          "reference_rows": 211,
+          "current_rows": 54,
+          "reference_smoothed_frequency": 0.10047505938242281,
+          "current_smoothed_frequency": 0.11978021978021978,
+          "psi_contribution": 0.0033928632206330967
+        },
+        {
+          "lower": 145.0,
+          "upper": 161.30000000000018,
+          "reference_rows": 225,
+          "current_rows": 45,
+          "reference_smoothed_frequency": 0.10712589073634204,
+          "current_smoothed_frequency": 0.1,
+          "psi_contribution": 0.0004905071673655362
+        },
+        {
+          "lower": 161.30000000000018,
+          "upper": 175.0,
+          "reference_rows": 204,
+          "current_rows": 43,
+          "reference_smoothed_frequency": 0.09714964370546318,
+          "current_smoothed_frequency": 0.0956043956043956,
+          "psi_contribution": 2.4776060274674627e-05
+        },
+        {
+          "lower": 175.0,
+          "upper": 201.10000000000016,
+          "reference_rows": 216,
+          "current_rows": 44,
+          "reference_smoothed_frequency": 0.10285035629453682,
+          "current_smoothed_frequency": 0.0978021978021978,
+          "psi_contribution": 0.00025406387762449186
+        },
+        {
+          "lower": 201.10000000000016,
+          "upper": null,
+          "reference_rows": 210,
+          "current_rows": 56,
+          "reference_smoothed_frequency": 0.1,
+          "current_smoothed_frequency": 0.12417582417582418,
+          "psi_contribution": 0.005234750404726145
+        }
+      ],
+      "status": "completed"
+    },
+    {
+      "feature": "teaching_hours",
+      "kind": "numeric",
+      "reference_missing_rate": 0.0,
+      "current_missing_rate": 0.0,
+      "reference_nonmissing": 2100,
+      "current_nonmissing": 450,
+      "missing_rate_change": 0.0,
+      "ks_distance": 0.04349206349206347,
+      "reference_mean": 128.88285714285715,
+      "current_mean": 132.46666666666667,
+      "mean_change": 3.5838095238095207,
+      "reference_std": 44.42806482638746,
+      "standardized_mean_change": 0.08066544284145738,
+      "outside_reference_range_rate": 0.0,
+      "psi": 0.0234170763702189,
+      "psi_smoothing_count": 0.5,
+      "histogram": [
+        {
+          "lower": null,
+          "upper": 75.0,
+          "reference_rows": 205,
+          "current_rows": 43,
+          "reference_smoothed_frequency": 0.09762470308788598,
+          "current_smoothed_frequency": 0.0956043956043956,
+          "psi_contribution": 4.224820274938424e-05
+        },
+        {
+          "lower": 75.0,
+          "upper": 88.0,
+          "reference_rows": 192,
+          "current_rows": 36,
+          "reference_smoothed_frequency": 0.09144893111638955,
+          "current_smoothed_frequency": 0.08021978021978023,
+          "psi_contribution": 0.0014711374143706823
+        },
+        {
+          "lower": 88.0,
+          "upper": 99.0,
+          "reference_rows": 212,
+          "current_rows": 39,
+          "reference_smoothed_frequency": 0.10095011876484561,
+          "current_smoothed_frequency": 0.08681318681318681,
+          "psi_contribution": 0.0021328104983026697
+        },
+        {
+          "lower": 99.0,
+          "upper": 110.0,
+          "reference_rows": 221,
+          "current_rows": 56,
+          "reference_smoothed_frequency": 0.10522565320665084,
+          "current_smoothed_frequency": 0.12417582417582418,
+          "psi_contribution": 0.003137984883050991
+        },
+        {
+          "lower": 110.0,
+          "upper": 123.0,
+          "reference_rows": 214,
+          "current_rows": 48,
+          "reference_smoothed_frequency": 0.10190023752969121,
+          "current_smoothed_frequency": 0.10659340659340659,
+          "psi_contribution": 0.00021132113847232642
+        },
+        {
+          "lower": 123.0,
+          "upper": 137.0,
+          "reference_rows": 209,
+          "current_rows": 45,
+          "reference_smoothed_frequency": 0.0995249406175772,
+          "current_smoothed_frequency": 0.1,
+          "psi_contribution": 2.2621918100919487e-06
+        },
+        {
+          "lower": 137.0,
+          "upper": 151.0,
+          "reference_rows": 213,
+          "current_rows": 33,
+          "reference_smoothed_frequency": 0.10142517814726841,
+          "current_smoothed_frequency": 0.07362637362637363,
+          "psi_contribution": 0.008904459319929406
+        },
+        {
+          "lower": 151.0,
+          "upper": 168.0,
+          "reference_rows": 206,
+          "current_rows": 45,
+          "reference_smoothed_frequency": 0.09809976247030879,
+          "current_smoothed_frequency": 0.1,
+          "psi_contribution": 3.645651443486737e-05
+        },
+        {
+          "lower": 168.0,
+          "upper": 191.0,
+          "reference_rows": 211,
+          "current_rows": 45,
+          "reference_smoothed_frequency": 0.10047505938242281,
+          "current_smoothed_frequency": 0.1,
+          "psi_contribution": 2.251470481661067e-06
+        },
+        {
+          "lower": 191.0,
+          "upper": null,
+          "reference_rows": 217,
+          "current_rows": 60,
+          "reference_smoothed_frequency": 0.10332541567695962,
+          "current_smoothed_frequency": 0.13296703296703297,
+          "psi_contribution": 0.007476144736616821
+        }
+      ],
+      "status": "completed"
+    },
+    {
+      "feature": "student_feedback_avg",
+      "kind": "numeric",
+      "reference_missing_rate": 0.02238095238095238,
+      "current_missing_rate": 0.017777777777777778,
+      "reference_nonmissing": 2053,
+      "current_nonmissing": 442,
+      "missing_rate_change": -0.004603174603174602,
+      "ks_distance": 0.05533013160301781,
+      "reference_mean": 3.5849196298100336,
+      "current_mean": 3.6300452488687784,
+      "mean_change": 0.04512561905874479,
+      "reference_std": 0.6285694222803664,
+      "standardized_mean_change": 0.07179098673784519,
+      "outside_reference_range_rate": 0.0,
+      "psi": 0.01689238738235683,
+      "psi_smoothing_count": 0.5,
+      "histogram": [
+        {
+          "lower": null,
+          "upper": 2.8,
+          "reference_rows": 198,
+          "current_rows": 47,
+          "reference_smoothed_frequency": 0.09645286686103012,
+          "current_smoothed_frequency": 0.10626398210290827,
+          "psi_contribution": 0.0009504216953621054
+        },
+        {
+          "lower": 2.8,
+          "upper": 3.06,
+          "reference_rows": 212,
+          "current_rows": 37,
+          "reference_smoothed_frequency": 0.1032555879494655,
+          "current_smoothed_frequency": 0.08389261744966443,
+          "psi_contribution": 0.00402110292554706
+        },
+        {
+          "lower": 3.06,
+          "upper": 3.25,
+          "reference_rows": 199,
+          "current_rows": 37,
+          "reference_smoothed_frequency": 0.09693877551020408,
+          "current_smoothed_frequency": 0.08389261744966443,
+          "psi_contribution": 0.0018857175379866215
+        },
+        {
+          "lower": 3.25,
+          "upper": 3.42,
+          "reference_rows": 205,
+          "current_rows": 38,
+          "reference_smoothed_frequency": 0.09985422740524781,
+          "current_smoothed_frequency": 0.08612975391498881,
+          "psi_contribution": 0.0020292522147104825
+        },
+        {
+          "lower": 3.42,
+          "upper": 3.59,
+          "reference_rows": 210,
+          "current_rows": 41,
+          "reference_smoothed_frequency": 0.10228377065111759,
+          "current_smoothed_frequency": 0.09284116331096197,
+          "psi_contribution": 0.0009146194840793565
+        },
+        {
+          "lower": 3.59,
+          "upper": 3.75,
+          "reference_rows": 204,
+          "current_rows": 46,
+          "reference_smoothed_frequency": 0.09936831875607385,
+          "current_smoothed_frequency": 0.1040268456375839,
+          "psi_contribution": 0.00021343347853726053
+        },
+        {
+          "lower": 3.75,
+          "upper": 3.91,
+          "reference_rows": 203,
+          "current_rows": 43,
+          "reference_smoothed_frequency": 0.09888241010689991,
+          "current_smoothed_frequency": 0.09731543624161074,
+          "psi_contribution": 2.5030440957679448e-05
+        },
+        {
+          "lower": 3.91,
+          "upper": 4.11,
+          "reference_rows": 200,
+          "current_rows": 52,
+          "reference_smoothed_frequency": 0.09742468415937804,
+          "current_smoothed_frequency": 0.1174496644295302,
+          "psi_contribution": 0.003743274460638106
+        },
+        {
+          "lower": 4.11,
+          "upper": 4.4,
+          "reference_rows": 213,
+          "current_rows": 48,
+          "reference_smoothed_frequency": 0.10374149659863946,
+          "current_smoothed_frequency": 0.10850111856823266,
+          "psi_contribution": 0.000213508488586174
+        },
+        {
+          "lower": 4.4,
+          "upper": null,
+          "reference_rows": 209,
+          "current_rows": 53,
+          "reference_smoothed_frequency": 0.10179786200194363,
+          "current_smoothed_frequency": 0.11968680089485459,
+          "psi_contribution": 0.0028960266559519827
+        }
+      ],
+      "status": "completed"
+    },
+    {
+      "feature": "course_completion_rate",
+      "kind": "numeric",
+      "reference_missing_rate": 0.02095238095238095,
+      "current_missing_rate": 0.017777777777777778,
+      "reference_nonmissing": 2056,
+      "current_nonmissing": 442,
+      "missing_rate_change": -0.0031746031746031737,
+      "ks_distance": 0.042816962163494565,
+      "reference_mean": 0.753057392996109,
+      "current_mean": 0.759079185520362,
+      "mean_change": 0.006021792524253056,
+      "reference_std": 0.1033519807263111,
+      "standardized_mean_change": 0.05826489712083517,
+      "outside_reference_range_rate": 0.004524886877828055,
+      "psi": 0.024157673572029137,
+      "psi_smoothing_count": 0.5,
+      "histogram": [
+        {
+          "lower": null,
+          "upper": 0.615,
+          "reference_rows": 204,
+          "current_rows": 42,
+          "reference_smoothed_frequency": 0.09922367782629792,
+          "current_smoothed_frequency": 0.09507829977628636,
+          "psi_contribution": 0.0001769077941568485
+        },
+        {
+          "lower": 0.615,
+          "upper": 0.668,
+          "reference_rows": 202,
+          "current_rows": 42,
+          "reference_smoothed_frequency": 0.0982532751091703,
+          "current_smoothed_frequency": 0.09507829977628636,
+          "psi_contribution": 0.00010429103201628494
+        },
+        {
+          "lower": 0.668,
+          "upper": 0.704,
+          "reference_rows": 207,
+          "current_rows": 42,
+          "reference_smoothed_frequency": 0.10067928190198933,
+          "current_smoothed_frequency": 0.09507829977628636,
+          "psi_contribution": 0.00032059616996116925
+        },
+        {
+          "lower": 0.704,
+          "upper": 0.731,
+          "reference_rows": 206,
+          "current_rows": 42,
+          "reference_smoothed_frequency": 0.10019408054342552,
+          "current_smoothed_frequency": 0.09507829977628636,
+          "psi_contribution": 0.0002681096299590687
+        },
+        {
+          "lower": 0.731,
+          "upper": 0.7535000000000001,
+          "reference_rows": 209,
+          "current_rows": 37,
+          "reference_smoothed_frequency": 0.10164968461911693,
+          "current_smoothed_frequency": 0.08389261744966443,
+          "psi_contribution": 0.003409264916861343
+        },
+        {
+          "lower": 0.7535000000000001,
+          "upper": 0.782,
+          "reference_rows": 205,
+          "current_rows": 51,
+          "reference_smoothed_frequency": 0.09970887918486172,
+          "current_smoothed_frequency": 0.11521252796420582,
+          "psi_contribution": 0.0022406456154697714
+        },
+        {
+          "lower": 0.782,
+          "upper": 0.808,
+          "reference_rows": 202,
+          "current_rows": 45,
+          "reference_smoothed_frequency": 0.0982532751091703,
+          "current_smoothed_frequency": 0.1017897091722595,
+          "psi_contribution": 0.00012504981388555293
+        },
+        {
+          "lower": 0.808,
+          "upper": 0.837,
+          "reference_rows": 200,
+          "current_rows": 37,
+          "reference_smoothed_frequency": 0.0972828723920427,
+          "current_smoothed_frequency": 0.08389261744966443,
+          "psi_contribution": 0.0019829002883617807
+        },
+        {
+          "lower": 0.837,
+          "upper": 0.884,
+          "reference_rows": 214,
+          "current_rows": 41,
+          "reference_smoothed_frequency": 0.10407569141193596,
+          "current_smoothed_frequency": 0.09284116331096197,
+          "psi_contribution": 0.0012833013255053904
+        },
+        {
+          "lower": 0.884,
+          "upper": null,
+          "reference_rows": 207,
+          "current_rows": 63,
+          "reference_smoothed_frequency": 0.10067928190198933,
+          "current_smoothed_frequency": 0.14205816554809844,
+          "psi_contribution": 0.014246606985851925
+        }
+      ],
+      "status": "completed"
+    },
+    {
+      "feature": "publication_count",
+      "kind": "numeric",
+      "reference_missing_rate": 0.02142857142857143,
+      "current_missing_rate": 0.024444444444444446,
+      "reference_nonmissing": 2055,
+      "current_nonmissing": 439,
+      "missing_rate_change": 0.003015873015873017,
+      "ks_distance": 0.033652018245404036,
+      "reference_mean": 2.0501216545012166,
+      "current_mean": 2.143507972665148,
+      "mean_change": 0.09338631816393139,
+      "reference_std": 1.462231316569436,
+      "standardized_mean_change": 0.06386562584572905,
+      "outside_reference_range_rate": 0.0,
+      "psi": 0.007023544061583408,
+      "psi_smoothing_count": 0.5,
+      "histogram": [
+        {
+          "lower": null,
+          "upper": 0.0,
+          "reference_rows": 0,
+          "current_rows": 0,
+          "reference_smoothed_frequency": 0.00024295432458697764,
+          "current_smoothed_frequency": 0.0011312217194570137,
+          "psi_contribution": 0.0013663151719232396
+        },
+        {
+          "lower": 0.0,
+          "upper": 1.0,
+          "reference_rows": 357,
+          "current_rows": 67,
+          "reference_smoothed_frequency": 0.17371234207968902,
+          "current_smoothed_frequency": 0.15271493212669685,
+          "psi_contribution": 0.002705048658848456
+        },
+        {
+          "lower": 1.0,
+          "upper": 2.0,
+          "reference_rows": 419,
+          "current_rows": 84,
+          "reference_smoothed_frequency": 0.20383867832847424,
+          "current_smoothed_frequency": 0.19117647058823528,
+          "psi_contribution": 0.0008120521652069791
+        },
+        {
+          "lower": 2.0,
+          "upper": 3.0,
+          "reference_rows": 520,
+          "current_rows": 115,
+          "reference_smoothed_frequency": 0.2529154518950437,
+          "current_smoothed_frequency": 0.26131221719457015,
+          "psi_contribution": 0.00027424403276937444
+        },
+        {
+          "lower": 3.0,
+          "upper": 4.0,
+          "reference_rows": 423,
+          "current_rows": 94,
+          "reference_smoothed_frequency": 0.20578231292517007,
+          "current_smoothed_frequency": 0.21380090497737556,
+          "psi_contribution": 0.00030652154417372895
+        },
+        {
+          "lower": 4.0,
+          "upper": null,
+          "reference_rows": 336,
+          "current_rows": 79,
+          "reference_smoothed_frequency": 0.16350826044703595,
+          "current_smoothed_frequency": 0.17986425339366516,
+          "psi_contribution": 0.001559362488661629
+        }
+      ],
+      "status": "completed"
+    },
+    {
+      "feature": "training_hours",
+      "kind": "numeric",
+      "reference_missing_rate": 0.020476190476190478,
+      "current_missing_rate": 0.03111111111111111,
+      "reference_nonmissing": 2057,
+      "current_nonmissing": 436,
+      "missing_rate_change": 0.010634920634920633,
+      "ks_distance": 0.04269043275813622,
+      "reference_mean": 29.96985901798736,
+      "current_mean": 30.51605504587156,
+      "mean_change": 0.5461960278842,
+      "reference_std": 9.166639947316098,
+      "standardized_mean_change": 0.05958519490493579,
+      "outside_reference_range_rate": 0.0,
+      "psi": 0.01948362593192058,
+      "psi_smoothing_count": 0.5,
+      "histogram": [
+        {
+          "lower": null,
+          "upper": 18.0,
+          "reference_rows": 182,
+          "current_rows": 35,
+          "reference_smoothed_frequency": 0.08850630455868089,
+          "current_smoothed_frequency": 0.08049886621315193,
+          "psi_contribution": 0.0007593508827086465
+        },
+        {
+          "lower": 18.0,
+          "upper": 22.0,
+          "reference_rows": 209,
+          "current_rows": 40,
+          "reference_smoothed_frequency": 0.1016003879728419,
+          "current_smoothed_frequency": 0.09183673469387756,
+          "psi_contribution": 0.0009864704758806048
+        },
+        {
+          "lower": 22.0,
+          "upper": 25.0,
+          "reference_rows": 183,
+          "current_rows": 42,
+          "reference_smoothed_frequency": 0.08899127061105723,
+          "current_smoothed_frequency": 0.0963718820861678,
+          "psi_contribution": 0.0005880590580473597
+        },
+        {
+          "lower": 25.0,
+          "upper": 28.0,
+          "reference_rows": 220,
+          "current_rows": 51,
+          "reference_smoothed_frequency": 0.10693501454898158,
+          "current_smoothed_frequency": 0.11678004535147392,
+          "psi_contribution": 0.0008670607421352788
+        },
+        {
+          "lower": 28.0,
+          "upper": 30.0,
+          "reference_rows": 172,
+          "current_rows": 35,
+          "reference_smoothed_frequency": 0.08365664403491756,
+          "current_smoothed_frequency": 0.08049886621315193,
+          "psi_contribution": 0.00012150418829708426
+        },
+        {
+          "lower": 30.0,
+          "upper": 32.0,
+          "reference_rows": 199,
+          "current_rows": 36,
+          "reference_smoothed_frequency": 0.09675072744907856,
+          "current_smoothed_frequency": 0.08276643990929705,
+          "psi_contribution": 0.0021831596589006494
+        },
+        {
+          "lower": 32.0,
+          "upper": 35.0,
+          "reference_rows": 247,
+          "current_rows": 52,
+          "reference_smoothed_frequency": 0.12002909796314258,
+          "current_smoothed_frequency": 0.11904761904761904,
+          "psi_contribution": 8.058553633714007e-06
+        },
+        {
+          "lower": 35.0,
+          "upper": 38.0,
+          "reference_rows": 228,
+          "current_rows": 38,
+          "reference_smoothed_frequency": 0.11081474296799224,
+          "current_smoothed_frequency": 0.0873015873015873,
+          "psi_contribution": 0.0056076802382992695
+        },
+        {
+          "lower": 38.0,
+          "upper": 42.0,
+          "reference_rows": 194,
+          "current_rows": 52,
+          "reference_smoothed_frequency": 0.0943258971871969,
+          "current_smoothed_frequency": 0.11904761904761904,
+          "psi_contribution": 0.005754420702595956
+        },
+        {
+          "lower": 42.0,
+          "upper": null,
+          "reference_rows": 223,
+          "current_rows": 55,
+          "reference_smoothed_frequency": 0.10838991270611058,
+          "current_smoothed_frequency": 0.12585034013605442,
+          "psi_contribution": 0.0026078614314220174
+        }
+      ],
+      "status": "completed"
+    },
+    {
+      "feature": "admin_delay_days",
+      "kind": "numeric",
+      "reference_missing_rate": 0.01904761904761905,
+      "current_missing_rate": 0.022222222222222223,
+      "reference_nonmissing": 2060,
+      "current_nonmissing": 440,
+      "missing_rate_change": 0.0031746031746031737,
+      "ks_distance": 0.07402912621359214,
+      "reference_mean": 7.019320388349515,
+      "current_mean": 6.731363636363636,
+      "mean_change": -0.28795675198587833,
+      "reference_std": 2.766631179217303,
+      "standardized_mean_change": -0.10408208876881922,
+      "outside_reference_range_rate": 0.0,
+      "psi": 0.029044153757473986,
+      "psi_smoothing_count": 0.5,
+      "histogram": [
+        {
+          "lower": null,
+          "upper": 3.5,
+          "reference_rows": 198,
+          "current_rows": 50,
+          "reference_smoothed_frequency": 0.09612590799031477,
+          "current_smoothed_frequency": 0.11348314606741573,
+          "psi_contribution": 0.002881222708227813
+        },
+        {
+          "lower": 3.5,
+          "upper": 4.680000000000001,
+          "reference_rows": 214,
+          "current_rows": 45,
+          "reference_smoothed_frequency": 0.10387409200968523,
+          "current_smoothed_frequency": 0.10224719101123596,
+          "psi_contribution": 2.568256694235054e-05
+        },
+        {
+          "lower": 4.680000000000001,
+          "upper": 5.6,
+          "reference_rows": 179,
+          "current_rows": 46,
+          "reference_smoothed_frequency": 0.08692493946731235,
+          "current_smoothed_frequency": 0.10449438202247191,
+          "psi_contribution": 0.003234329302006725
+        },
+        {
+          "lower": 5.6,
+          "upper": 6.3,
+          "reference_rows": 208,
+          "current_rows": 55,
+          "reference_smoothed_frequency": 0.1009685230024213,
+          "current_smoothed_frequency": 0.12471910112359551,
+          "psi_contribution": 0.005017433196238478
+        },
+        {
+          "lower": 6.3,
+          "upper": 7.0,
+          "reference_rows": 211,
+          "current_rows": 48,
+          "reference_smoothed_frequency": 0.10242130750605327,
+          "current_smoothed_frequency": 0.10898876404494381,
+          "psi_contribution": 0.0004081675728813511
+        },
+        {
+          "lower": 7.0,
+          "upper": 7.7,
+          "reference_rows": 195,
+          "current_rows": 39,
+          "reference_smoothed_frequency": 0.0946731234866828,
+          "current_smoothed_frequency": 0.08876404494382023,
+          "psi_contribution": 0.0003808311556348122
+        },
+        {
+          "lower": 7.7,
+          "upper": 8.5,
+          "reference_rows": 226,
+          "current_rows": 44,
+          "reference_smoothed_frequency": 0.10968523002421307,
+          "current_smoothed_frequency": 0.1,
+          "psi_contribution": 0.0008953465619564267
+        },
+        {
+          "lower": 8.5,
+          "upper": 9.3,
+          "reference_rows": 197,
+          "current_rows": 27,
+          "reference_smoothed_frequency": 0.09564164648910412,
+          "current_smoothed_frequency": 0.06179775280898876,
+          "psi_contribution": 0.014781028033056535
+        },
+        {
+          "lower": 9.3,
+          "upper": 10.5,
+          "reference_rows": 221,
+          "current_rows": 46,
+          "reference_smoothed_frequency": 0.1072639225181598,
+          "current_smoothed_frequency": 0.10449438202247191,
+          "psi_contribution": 7.244855844851444e-05
+        },
+        {
+          "lower": 10.5,
+          "upper": null,
+          "reference_rows": 211,
+          "current_rows": 40,
+          "reference_smoothed_frequency": 0.10242130750605327,
+          "current_smoothed_frequency": 0.09101123595505618,
+          "psi_contribution": 0.0013476641020809769
+        }
+      ],
+      "status": "completed"
+    },
+    {
+      "feature": "digital_activity_rate",
+      "kind": "numeric",
+      "reference_missing_rate": 0.018571428571428572,
+      "current_missing_rate": 0.02666666666666667,
+      "reference_nonmissing": 2061,
+      "current_nonmissing": 438,
+      "missing_rate_change": 0.008095238095238096,
+      "ks_distance": 0.042245751164815604,
+      "reference_mean": 0.7005856380397866,
+      "current_mean": 0.702472602739726,
+      "mean_change": 0.0018869646999394307,
+      "reference_std": 0.12421331711576458,
+      "standardized_mean_change": 0.015191323633848482,
+      "outside_reference_range_rate": 0.0,
+      "psi": 0.020869539601038604,
+      "psi_smoothing_count": 0.5,
+      "histogram": [
+        {
+          "lower": null,
+          "upper": 0.538,
+          "reference_rows": 206,
+          "current_rows": 44,
+          "reference_smoothed_frequency": 0.0999515972894482,
+          "current_smoothed_frequency": 0.10045146726862303,
+          "psi_contribution": 2.493679573555292e-06
+        },
+        {
+          "lower": 0.538,
+          "upper": 0.599,
+          "reference_rows": 205,
+          "current_rows": 41,
+          "reference_smoothed_frequency": 0.0994675701839303,
+          "current_smoothed_frequency": 0.09367945823927765,
+          "psi_contribution": 0.000347013095640519
+        },
+        {
+          "lower": 0.599,
+          "upper": 0.635,
+          "reference_rows": 206,
+          "current_rows": 42,
+          "reference_smoothed_frequency": 0.0999515972894482,
+          "current_smoothed_frequency": 0.09593679458239278,
+          "psi_contribution": 0.00016459268588592957
+        },
+        {
+          "lower": 0.635,
+          "upper": 0.667,
+          "reference_rows": 207,
+          "current_rows": 37,
+          "reference_smoothed_frequency": 0.10043562439496612,
+          "current_smoothed_frequency": 0.08465011286681716,
+          "psi_contribution": 0.002699172936108942
+        },
+        {
+          "lower": 0.667,
+          "upper": 0.698,
+          "reference_rows": 205,
+          "current_rows": 41,
+          "reference_smoothed_frequency": 0.0994675701839303,
+          "current_smoothed_frequency": 0.09367945823927765,
+          "psi_contribution": 0.000347013095640519
+        },
+        {
+          "lower": 0.698,
+          "upper": 0.733,
+          "reference_rows": 207,
+          "current_rows": 59,
+          "reference_smoothed_frequency": 0.10043562439496612,
+          "current_smoothed_frequency": 0.1343115124153499,
+          "psi_contribution": 0.009845852477508557
+        },
+        {
+          "lower": 0.733,
+          "upper": 0.77,
+          "reference_rows": 199,
+          "current_rows": 48,
+          "reference_smoothed_frequency": 0.09656340755082285,
+          "current_smoothed_frequency": 0.10948081264108352,
+          "psi_contribution": 0.0016217729914558786
+        },
+        {
+          "lower": 0.77,
+          "upper": 0.803,
+          "reference_rows": 209,
+          "current_rows": 36,
+          "reference_smoothed_frequency": 0.10140367860600194,
+          "current_smoothed_frequency": 0.08239277652370203,
+          "psi_contribution": 0.003946883782386904
+        },
+        {
+          "lower": 0.803,
+          "upper": 0.857,
+          "reference_rows": 210,
+          "current_rows": 41,
+          "reference_smoothed_frequency": 0.10188770571151985,
+          "current_smoothed_frequency": 0.09367945823927765,
+          "psi_contribution": 0.000689429963805216
+        },
+        {
+          "lower": 0.857,
+          "upper": null,
+          "reference_rows": 207,
+          "current_rows": 49,
+          "reference_smoothed_frequency": 0.10043562439496612,
+          "current_smoothed_frequency": 0.11173814898419865,
+          "psi_contribution": 0.001205314893032585
+        }
+      ],
+      "status": "completed"
+    },
+    {
+      "feature": "department",
+      "kind": "categorical",
+      "status": "completed",
+      "total_variation": 0.025396825396825376,
+      "unseen_category_rows": 0,
+      "unseen_category_rate": 0.0,
+      "reference_missing_rate": 0.0,
+      "current_missing_rate": 0.0,
+      "categories": 4,
+      "largest_changes": [
+        {
+          "value": "Психология",
+          "reference_rows": 548,
+          "current_rows": 106,
+          "reference_frequency": 0.26095238095238094,
+          "current_frequency": 0.23555555555555555,
+          "absolute_change": 0.02539682539682539
+        },
+        {
+          "value": "Информатика",
+          "reference_rows": 494,
+          "current_rows": 112,
+          "reference_frequency": 0.23523809523809525,
+          "current_frequency": 0.24888888888888888,
+          "absolute_change": 0.013650793650793636
+        },
+        {
+          "value": "Экономика",
+          "reference_rows": 462,
+          "current_rows": 102,
+          "reference_frequency": 0.22,
+          "current_frequency": 0.22666666666666666,
+          "absolute_change": 0.006666666666666654
+        },
+        {
+          "value": "Математика",
+          "reference_rows": 596,
+          "current_rows": 130,
+          "reference_frequency": 0.2838095238095238,
+          "current_frequency": 0.28888888888888886,
+          "absolute_change": 0.005079365079365072
+        }
+      ],
+      "omitted_categories": 0
+    },
+    {
+      "feature": "position",
+      "kind": "categorical",
+      "status": "completed",
+      "total_variation": 0.009523809523809518,
+      "unseen_category_rows": 0,
+      "unseen_category_rate": 0.0,
+      "reference_missing_rate": 0.0,
+      "current_missing_rate": 0.0,
+      "categories": 3,
+      "largest_changes": [
+        {
+          "value": "Преподаватель",
+          "reference_rows": 692,
+          "current_rows": 144,
+          "reference_frequency": 0.3295238095238095,
+          "current_frequency": 0.32,
+          "absolute_change": 0.00952380952380949
+        },
+        {
+          "value": "Доцент",
+          "reference_rows": 708,
+          "current_rows": 154,
+          "reference_frequency": 0.33714285714285713,
+          "current_frequency": 0.3422222222222222,
+          "absolute_change": 0.005079365079365072
+        },
+        {
+          "value": "Старший преподаватель",
+          "reference_rows": 700,
+          "current_rows": 152,
+          "reference_frequency": 0.3333333333333333,
+          "current_frequency": 0.3377777777777778,
+          "absolute_change": 0.004444444444444473
+        }
+      ],
+      "omitted_categories": 0
+    }
+  ],
+  "limitation": "Сравниваются только входные распределения. KS приводится как расстояние без p-value; PSI использует train-границы и сглаживание 0.5 наблюдения. Числа не доказывают деградацию модели, справедливость или причинность; пороги тревоги не подбирались. Test не используется."
+}

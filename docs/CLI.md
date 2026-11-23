@@ -101,3 +101,5 @@ GUI теперь обучает собственный эксперимент в
 
 
 Прогноз дополнительно сохраняет max_probability, normalized_entropy и review_recommended. Порог просмотра задаётся `predict --review-threshold 0.7` либо полем GUI; флаг использует строгое сравнение вероятности с порогом, не меняет класс и не является кадровым решением или калибровкой.
+
+`main.py research-report --splits КАТАЛОГ --experiment МОДЕЛЬ --output НОВЫЙ_КАТАЛОГ` заново вычисляет пять диагностик и сохраняет research.md, исходные JSON и manifest.json с SHA. Частично доступный анализ помечается partial/unavailable; разные модели/данные в одном пакете не допускаются. Готовый пример: reports/simulation-research-v1/research.md.

@@ -84,6 +84,11 @@ def main(argv=None):
     distribution.add_argument("--experiment", required=True, type=Path)
     distribution.add_argument("--output", required=True, type=Path)
     distribution.add_argument("--report", type=Path)
+    research = commands.add_parser("research-report", help="Собрать пять диагностик и Markdown с контрольными суммами")
+    research.add_argument("--splits", required=True, type=Path)
+    research.add_argument("--experiment", required=True, type=Path)
+    research.add_argument("--output", required=True, type=Path)
+    research.add_argument("--report", type=Path)
     serve = commands.add_parser("serve", help="Открыть локальный интерфейс данных и JSON-прогноза")
     serve.add_argument("--port", type=int, default=8033)
     demo = commands.add_parser("generate-demo", help="Создать явно помеченную симуляцию для разработки")
@@ -125,6 +130,9 @@ def main(argv=None):
         elif args.command == "importance":
             from .importance import run_importance
             report = run_importance(args.splits, args.experiment, args.output, args.repeats, args.seed)
+        elif args.command == "research-report":
+            from .research_report import run_research_report
+            report = run_research_report(args.splits, args.experiment, args.output)
         elif args.command == "predict":
             from .prediction import run_prediction
             report = run_prediction(args.model, args.source, args.output, review_threshold=args.review_threshold)

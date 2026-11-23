@@ -11,6 +11,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from datetime import datetime, timezone
 from .analysis_suite import run_analysis_suite
+from .research_report import run_research_report
 from .baselines import run_baseline_experiment
 from .comparison import run_comparison
 from .data import Dataset, DatasetError, load_dataset
@@ -64,9 +65,11 @@ def run_job(directory, dataset, config, epochs):
         export_plots(directory/"neural", directory/"diagnostics-neural", directory/"figures")
         stage("Анализ validation выбранной модели", 95)
         analyses = run_analysis_suite(directory/"splits", directory/family, directory/"analysis")
+        package = run_research_report(directory/"splits", directory/family, directory/"research",
+            existing_analyses=directory/"analysis")
         state.update(state="completed", stage="Готово", progress=100,
             completed_at=datetime.now(timezone.utc).isoformat(), result={"selected_family": family,
-                "selected_model": selected["model"], "analysis_status": analyses, "metrics": selected["metrics"], "rows": comparison["rows"],
+                "selected_model": selected["model"], "analysis_status": analyses, "research_status": package["status"], "metrics": selected["metrics"], "rows": comparison["rows"],
                 "data_origin": comparison["data_origin"], "intended_use": comparison["intended_use"]})
         write_state(directory, state)
     except Exception as exc:

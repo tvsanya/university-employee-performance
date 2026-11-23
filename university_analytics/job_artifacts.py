@@ -11,7 +11,7 @@ class JobNotReady(RuntimeError):
     pass
 
 
-ARTIFACT_LABELS = {"model.json": "Выбранная модель JSON", "comparison.json": "Сравнение JSON",
+ARTIFACT_LABELS = {"research.md": "Исследовательский отчёт Markdown", "research-manifest.json": "Происхождение и SHA анализов JSON", "model.json": "Выбранная модель JSON", "comparison.json": "Сравнение JSON",
     "comparison.csv": "Сравнение CSV", "history.json": "История нейросети JSON",
     "diagnostics.json": "Ошибки выбранной модели JSON", "training.png": "Обучение нейросети PNG",
     "neural-confusion.png": "Матрица ошибок нейросети PNG", "distribution.json": "Распределения признаков (train/validation)", "importance.json": "Важность признаков (validation)", "probabilities.json": "Вероятности (validation)", "robustness.json": "Устойчивость (validation)", "uncertainty.json": "Групповые интервалы (validation)", "experiment.zip": "Полный эксперимент с данными ZIP"}
@@ -29,7 +29,7 @@ def artifact_path(manager, job_id, owner, name):
     family = state["result"]["selected_family"]
     if family not in {"baseline", "neural"}:
         raise JobNotFound
-    mapping = {"model.json": f"{family}/model.json", "comparison.json": "comparison/comparison.json",
+    mapping = {"research.md": "research/research.md", "research-manifest.json": "research/manifest.json", "model.json": f"{family}/model.json", "comparison.json": "comparison/comparison.json",
         "comparison.csv": "comparison/comparison.csv", "history.json": "neural/training.json",
         "diagnostics.json": "diagnostics-selected/diagnostics.json" if family == "baseline" else "diagnostics-neural/diagnostics.json",
         "distribution.json": "analysis/distribution/analysis.json", "importance.json": "analysis/importance/analysis.json", "probabilities.json": "analysis/probabilities/analysis.json", "robustness.json": "analysis/robustness/analysis.json", "uncertainty.json": "analysis/uncertainty/analysis.json",
@@ -45,7 +45,7 @@ def artifact_path(manager, job_id, owner, name):
 def experiment_archive(manager, job_id, owner):
     directory, state = completed_job(manager, job_id, owner)
     files = [directory/"input.csv", directory/"config.json"]
-    for folder in ["splits", "baseline", "neural", "comparison", "diagnostics-neural", "diagnostics-selected", "figures", "analysis"]:
+    for folder in ["splits", "baseline", "neural", "comparison", "diagnostics-neural", "diagnostics-selected", "figures", "analysis", "research"]:
         files += sorted((directory/folder).rglob("*"))
     output, hashes = io.BytesIO(), {}
     with ZipFile(output, "w", compression=ZIP_DEFLATED) as archive:

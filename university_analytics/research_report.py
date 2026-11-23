@@ -18,7 +18,26 @@ def markdown_text(value):
     return escape(str(value)).replace("\\", "\\\\").replace("|", "\\|").replace("`", "\\`").replace("[", "\\[").replace("]", "\\]").replace("\n", " ").replace("\r", " ")
 
 
-def run_research_report(splits, experiment, destination):
+def existing_analysis(source, name, provenance, destination):
+    path = Path(source)/name/"analysis.json"
+    raw = path.read_bytes()
+    if len(raw) > 8*1024*1024:
+        raise DatasetError("Сохранённый анализ превышает размер пакета.")
+    try:
+        report = json.loads(raw)
+    except (ValueError, UnicodeDecodeError, RecursionError) as exc:
+        raise DatasetError("Повреждён сохранённый анализ.") from exc
+    if not isinstance(report, dict) or any(report.get(key) != value for key,value in provenance.items()):
+        raise DatasetError("Сохранённые анализы относятся к другой модели или данным.")
+    if report.get("status") not in {"completed", "unavailable"}:
+        raise DatasetError("В сохранённом анализе отсутствует допустимый статус.")
+    target = destination/name/"analysis.json"
+    target.parent.mkdir()
+    target.write_bytes(raw)
+    return report
+
+
+def run_research_report(splits, experiment, destination, *, existing_analyses=None):
     destination = Path(destination)
     if destination.exists():
         raise DatasetError("Каталог исследовательского пакета уже существует.")
@@ -31,13 +50,19 @@ def run_research_report(splits, experiment, destination):
             ("probabilities",run_probability_analysis),("robustness",run_robustness),("uncertainty",run_uncertainty)]
         for name, function in steps:
             try:
-                report = function(splits, experiment, temporary/name)
+                report = (function(splits, experiment, temporary/name) if existing_analyses is None
+                    else existing_analysis(existing_analyses, name, provenance, temporary))
             except DatasetError as exc:
+                if existing_analyses is not None:
+                    raise
                 analyses[name] = {"status":"unavailable", "reason":str(exc)}
                 continue
             if any(report.get(key) != value for key,value in provenance.items()):
                 raise DatasetError("Анализы относятся к разным данным или моделям; пакет не сохранён.")
-            analyses[name] = {"status":"completed", "file":f"{name}/analysis.json", "report":report}
+            if report.get("status") == "unavailable":
+                analyses[name] = {"status":"unavailable", "file":f"{name}/analysis.json", "reason":report.get("reason", "Анализ неприменим.")}
+            else:
+                analyses[name] = {"status":"completed", "file":f"{name}/analysis.json", "report":report}
         lines = ["# Диагностика сохранённой модели", "",
             f"Происхождение: {markdown_text(provenance['data_origin'])}. Назначение: {markdown_text(provenance['intended_use'])}.",
             "Симуляционные результаты не оценивают реальных сотрудников. Test не используется для настройки анализов.",
@@ -66,6 +91,7 @@ def run_research_report(splits, experiment, destination):
             lines += ["", markdown_text(report["limitation"]), "", f"Полный результат: [{name}/analysis.json]({name}/analysis.json).", ""]
         (temporary/"research.md").write_text("\n".join(lines)+"\n", encoding="utf-8")
         summary = {**provenance, "schema_version":1,
+            "analysis_source":"recomputed" if existing_analyses is None else "existing_snapshot",
             "status":"completed" if all(item["status"]=="completed" for item in analyses.values()) else "partial",
             "analyses":{name:{key:value for key,value in item.items() if key!="report"} for name,item in analyses.items()}}
         summary["files"] = {str(path.relative_to(temporary)):hashlib.sha256(path.read_bytes()).hexdigest() for path in sorted(temporary.rglob("*")) if path.is_file()}

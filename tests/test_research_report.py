@@ -29,3 +29,23 @@ class ResearchPackageTests(unittest.TestCase):
                 with self.assertRaises(DatasetError): run_research_report("splits","model",target)
             self.assertFalse(target.exists())
             self.assertEqual(list(Path(folder).iterdir()),[])
+
+    def test_existing_snapshot_is_copied_exactly_without_recomputation(self):
+        import json
+        provenance={"partition":"validation","rows":2,"source_sha256":"a"*64,"split_manifest_sha256":"b"*64,"model_sha256":"c"*64,"data_origin":"synthetic","intended_use":"development_demo_only"}
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder);source=root/'analyses'
+            for name in ['distribution','importance','probabilities','robustness','uncertainty']:
+                path=source/name/'analysis.json';path.parent.mkdir(parents=True)
+                path.write_text(json.dumps({**provenance,'status':'unavailable','reason':'Недостаточно данных <tag>'}))
+            with patch('university_analytics.research_report.validation_context',return_value=(SimpleNamespace(rows=[1,2]),None,None,provenance)), patch('university_analytics.research_report.run_distribution_shift') as calculate:
+                result=run_research_report('splits','model',root/'package',existing_analyses=source)
+                calculate.assert_not_called()
+            self.assertEqual(result['analysis_source'],'existing_snapshot');self.assertEqual(result['status'],'partial')
+            self.assertEqual((root/'package/uncertainty/analysis.json').read_bytes(),(source/'uncertainty/analysis.json').read_bytes())
+            self.assertNotIn('<tag>',(root/'package/research.md').read_text())
+            bad=json.loads((source/'distribution/analysis.json').read_text());bad['model_sha256']='different'
+            (source/'distribution/analysis.json').write_text(json.dumps(bad))
+            with patch('university_analytics.research_report.validation_context',return_value=(SimpleNamespace(rows=[1,2]),None,None,provenance)):
+                with self.assertRaises(DatasetError):run_research_report('splits','model',root/'invalid',existing_analyses=source)
+            self.assertFalse((root/'invalid').exists())

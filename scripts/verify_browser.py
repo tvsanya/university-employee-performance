@@ -85,6 +85,10 @@ def verify(app_python, output):
                     state=context.request.get(url+'/api/jobs/'+job_id).json()
                     assert state['state']=='completed' and state['result']['intended_use']=='development_demo_only'
                     assert len(state['result']['analysis_status'])==5;checks.append('five_validation_analyses')
+                    with page.expect_download() as result:page.get_by_role('link',name='Исследовательский отчёт Markdown',exact=True).click()
+                    markdown=target/'research.md';result.value.save_as(markdown)
+                    assert 'Диагностика сохранённой модели' in markdown.read_text()
+                    checks.append('research_markdown_download')
                     shot('trained-desktop.png','#training-result')
                     with page.expect_download() as result:page.get_by_role('link',name='Полный эксперимент с данными ZIP',exact=True).click()
                     archive=target/'experiment.zip';result.value.save_as(archive)
@@ -92,6 +96,7 @@ def verify(app_python, output):
                         hashes=json.loads(bundle.read('SHA256SUMS.json'))
                         assert all(hashlib.sha256(bundle.read(name)).hexdigest()==value for name,value in hashes.items())
                         assert bundle.read('input.csv')==payload and 'status.json' not in bundle.namelist()
+                        assert bundle.read('analysis/uncertainty/analysis.json')==bundle.read('research/uncertainty/analysis.json')
                     checks.append('downloaded_archive_hashes_and_source')
                     page.get_by_role('button',name='Выбрать для прогноза',exact=True).click()
                     expect(page.locator('#experiment')).to_have_value('job:'+job_id)

@@ -237,7 +237,8 @@ def create_app(repository=None):
         directory, state = completed_job(manager, job_id, session.get("workspace_id", ""))
         comparison = json.loads((directory/"comparison/comparison.json").read_text(encoding="utf-8"))
         return jsonify(selected=state["result"], comparison=comparison,
-            files=[{"name": name, "label": label} for name, label in ARTIFACT_LABELS.items()])
+            files=[{"name": name, "label": label} for name, label in ARTIFACT_LABELS.items()
+                if not name.startswith("research") or state["result"].get("research_status")])
 
     @app.get("/api/jobs/<job_id>/download/<name>")
     def job_download(job_id, name):

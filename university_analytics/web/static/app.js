@@ -103,6 +103,7 @@ async function pollJob(id) {
       if (job.state === "failed") throw new Error(job.error);
       const label = {linear: "линейная", dummy: "константная", neural: "нейросеть"}[job.result.selected_model] || job.result.selected_model;
       jobMessage.textContent = `Выбрана модель: ${label}, по validation. Данные: ${job.result.data_origin}.`;
+      if (job.result.research_status === "partial") jobMessage.textContent += " Некоторые анализы недоступны; причины сохранены в отчёте.";
       await showArtifacts(id);
       await refreshJobs();
       const parts = ["train", "validation", "test"];

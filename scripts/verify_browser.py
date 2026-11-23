@@ -77,7 +77,13 @@ def verify(app_python, output):
                     records=list(csv.DictReader(io.StringIO(predictions.read_text(encoding='utf-8-sig'))))
                     assert len(records)==3000 and 'review_recommended' in records[0];checks.append('3000_predictions_and_csv_review_flags')
                     page.locator('#train-data').set_input_files(target/'data/simulation-v1/synthetic_employees.csv')
-                    page.locator('#epochs').fill('2');page.get_by_role('button',name='Начать обучение',exact=True).click()
+                    page.locator('#epochs').fill('2')
+                    page.get_by_role('button',name='Проверить настройки',exact=True).click()
+                    expect(page.locator('#preflight-result')).to_contain_text('Настройки проверены',timeout=30000)
+                    assert 'train: 2100 строк' in page.locator('#preflight-result').inner_text()
+                    assert context.request.get(url+'/api/jobs').json()['jobs']==[]
+                    checks.append('contract_and_split_preflight_without_job');shot('preflight-desktop.png','#preflight-result')
+                    page.get_by_role('button',name='Начать обучение',exact=True).click()
                     expect(page.locator('#job-stage')).to_have_text('Готово',timeout=120000)
                     expect(page.locator('#job-metrics tbody tr')).to_have_count(3,timeout=30000)
                     checks.append('actual_background_baseline_and_two_dl_candidates')
@@ -96,6 +102,7 @@ def verify(app_python, output):
                         hashes=json.loads(bundle.read('SHA256SUMS.json'))
                         assert all(hashlib.sha256(bundle.read(name)).hexdigest()==value for name,value in hashes.items())
                         assert bundle.read('input.csv')==payload and 'status.json' not in bundle.namelist()
+                        assert json.loads(bundle.read('preflight.json'))['source_sha256']==hashlib.sha256(payload).hexdigest()
                         assert bundle.read('analysis/uncertainty/analysis.json')==bundle.read('research/uncertainty/analysis.json')
                     checks.append('downloaded_archive_hashes_and_source')
                     page.get_by_role('button',name='Выбрать для прогноза',exact=True).click()
@@ -110,6 +117,18 @@ def verify(app_python, output):
                         shot(name,selector)
                         dimensions=page.evaluate('({width:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth})')
                         assert dimensions['scroll']<=dimensions['width']+1,(name,dimensions)
+                    shot('preflight-mobile.png','#preflight-result')
+                    page.set_viewport_size({'width':1440,'height':1000})
+                    page.locator('#epochs').fill('100')
+                    page.get_by_role('button',name='Начать обучение',exact=True).click()
+                    expect(page.locator('#cancel-job')).to_be_visible(timeout=30000)
+                    cancelled_id=page.evaluate('sessionStorage.getItem("university-job-id")')
+                    assert cancelled_id!=job_id
+                    page.get_by_role('button',name='Остановить обучение',exact=True).click()
+                    expect(page.locator('#job-stage')).to_have_text('Обучение остановлено',timeout=120000)
+                    assert context.request.get(url+'/api/jobs/'+cancelled_id).json()['state']=='cancelled'
+                    assert context.request.get(url+'/api/jobs/'+cancelled_id+'/download/model.json').status==409
+                    checks.append('real_training_cancelled_without_ready_model');shot('cancelled-desktop.png','#training-result')
                     checks.append('mobile_390_no_document_overflow');assert not errors,errors;checks.append('no_browser_page_errors')
                     browser_version=browser.version;context.close();browser.close()
             finally:

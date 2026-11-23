@@ -132,3 +132,34 @@ class TrainingJobTests(unittest.TestCase):
                 manager.submit(source,config,'owner',2)
             self.assertIsNone(manager.active)
             self.assertEqual(list(manager.root.iterdir()),[])
+
+    def test_owner_can_cancel_between_stages_without_exposing_partial_model(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder);source,config=self.inputs(root)
+            app=create_app(root);app.config['TESTING']=True
+            manager=app.extensions['training_manager']
+            client=app.test_client();client.get('/')
+            with client.session_transaction() as state:token=state['csrf']
+            entered=threading.Event();released=threading.Event()
+            def baseline(*args):entered.set();self.assertTrue(released.wait(10))
+            try:
+                with patch('university_analytics.jobs.run_baseline_experiment',side_effect=baseline), patch('university_analytics.jobs.run_neural_experiment') as neural:
+                    response=client.post('/api/train',data={'data':(io.BytesIO(source.read_bytes()),'data.csv'),
+                        'config':(io.BytesIO(json.dumps(config).encode()),'config.json'),'epochs':'3'},headers={'X-CSRF-Token':token})
+                    self.assertEqual(response.status_code,202,response.json)
+                    job_id=response.json['id'];self.assertTrue(entered.wait(10))
+                    path='/api/jobs/'+job_id+'/cancel'
+                    self.assertEqual(client.post(path).status_code,403)
+                    stranger=app.test_client();stranger.get('/')
+                    with stranger.session_transaction() as state:foreign_token=state['csrf']
+                    self.assertEqual(stranger.post(path,headers={'X-CSRF-Token':foreign_token}).status_code,404)
+                    for _ in range(2):
+                        result=client.post(path,headers={'X-CSRF-Token':token})
+                        self.assertEqual(result.json['state'],'cancelling')
+                    self.assertEqual(client.get('/api/jobs/'+job_id+'/download/model.json').status_code,409)
+                    released.set();manager.active.result(timeout=10)
+                    self.assertEqual(client.get('/api/jobs/'+job_id).json['state'],'cancelled')
+                    neural.assert_not_called()
+                    self.assertFalse((manager.root/job_id/'error.log').exists())
+            finally:
+                released.set();manager.close()

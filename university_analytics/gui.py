@@ -228,6 +228,10 @@ def create_app(repository=None):
             job = manager.submit(source, values, session.setdefault("workspace_id", secrets.token_urlsafe(32)), epochs)
         return jsonify(job), 202
 
+    @app.post('/api/jobs/<job_id>/cancel')
+    def job_cancel(job_id):
+        return jsonify(manager.cancel(job_id, session.get('workspace_id', '')))
+
     @app.get("/api/jobs/<job_id>")
     def job_status(job_id):
         return jsonify(manager.get(job_id, session.get("workspace_id", "")))

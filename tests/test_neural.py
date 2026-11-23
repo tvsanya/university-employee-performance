@@ -42,3 +42,14 @@ class NeuralTests(unittest.TestCase):
         _, regression, _, regression_parts = fixture("regression")
         with self.assertRaises(DatasetError):
             train_network(regression_parts["train"], regression_parts["validation"], regression)
+
+    def test_cancellation_checkpoint_runs_between_epochs(self):
+        _,config,_,parts=fixture(size=80)
+        calls=[]
+        def checkpoint():
+            calls.append(True)
+            if len(calls)==2:raise RuntimeError('stopped')
+        with self.assertRaisesRegex(RuntimeError,'stopped'):
+            train_network(parts['train'],parts['validation'],config,
+                NetworkConfig(hidden_layers=(8,4),max_epochs=4),checkpoint=checkpoint)
+        self.assertEqual(len(calls),2)

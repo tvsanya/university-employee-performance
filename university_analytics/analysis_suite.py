@@ -11,7 +11,7 @@ from .robustness import robustness_analysis
 from .uncertainty import grouped_bootstrap
 
 
-def run_analysis_suite(split_directory,experiment_directory,destination):
+def run_analysis_suite(split_directory,experiment_directory,destination, *, checkpoint=None):
     dataset,config,model,provenance = validation_context(split_directory,experiment_directory)
     truth = target_vector(dataset,config)
     reference = load_split_bundle(split_directory,config)[0]["train"]
@@ -24,6 +24,8 @@ def run_analysis_suite(split_directory,experiment_directory,destination):
     }
     status = {}
     for name,calculate in tasks.items():
+        if checkpoint is not None:
+            checkpoint()
         try:
             report = {"status":"completed",**calculate()}
         except DatasetError as exc:

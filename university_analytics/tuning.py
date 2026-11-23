@@ -34,12 +34,12 @@ def load_network_grid(path, seed=42):
     return result
 
 
-def fit_neural_candidates(datasets, config, candidates):
+def fit_neural_candidates(datasets, config, candidates, *, checkpoint=None):
     if not 1 <= len(candidates) <= 8:
         raise DatasetError("Для поиска допустимо от одного до восьми вариантов.")
     trials, selected_model, selected_key, selected_number = [], None, None, None
     for number, parameters in enumerate(candidates, 1):
-        model, training = train_network(datasets["train"], datasets["validation"], config, parameters)
+        model, training = train_network(datasets["train"], datasets["validation"], config, parameters, checkpoint=checkpoint)
         trials.append({"candidate": number, **training})
         key = (training["best_validation_macro_f1"], -training["architecture"]["parameter_count"])
         if selected_key is None or key > selected_key:
@@ -59,13 +59,13 @@ def fit_neural_candidates(datasets, config, candidates):
     return selected_model, report, {"selected_candidate": selected_number, "trials": trials}
 
 
-def run_neural_experiment(split_directory, config, candidates, destination):
+def run_neural_experiment(split_directory, config, candidates, destination, *, checkpoint=None):
     destination = Path(destination)
     if destination.exists():
         raise DatasetError("Каталог эксперимента уже существует; выберите новый путь.")
     datasets, manifest = load_split_bundle(split_directory, config)
     started = time.perf_counter()
-    model, report, training = fit_neural_candidates(datasets, config, candidates)
+    model, report, training = fit_neural_candidates(datasets, config, candidates, checkpoint=checkpoint)
     report.update({"runtime_seconds": round(time.perf_counter()-started, 3),
         "source_sha256": manifest.get("source_sha256"), "data_origin": manifest.get("data_origin", "unspecified"),
         "split_manifest_sha256": hashlib.sha256((Path(split_directory)/"manifest.json").read_bytes()).hexdigest(),

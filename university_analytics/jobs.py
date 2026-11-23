@@ -29,6 +29,10 @@ class TrainingBusy(RuntimeError):
     pass
 
 
+class TrainingCancelled(RuntimeError):
+    pass
+
+
 class JobNotFound(LookupError):
     pass
 
@@ -41,7 +45,11 @@ def write_state(directory, state):
 
 def run_job(directory, dataset, config, epochs):
     state = json.loads((directory/"status.json").read_text(encoding="utf-8"))
+    def check_cancel():
+        if (directory/"cancel.requested").exists():
+            raise TrainingCancelled
     def stage(name, progress):
+        check_cancel()
         state.update(state="running", stage=name, progress=progress)
         write_state(directory, state)
     try:
@@ -53,7 +61,7 @@ def run_job(directory, dataset, config, epochs):
         stage("Обучение нейросетей", 45)
         candidates = [NetworkConfig(hidden_layers=(32, 16), learning_rate=rate, max_epochs=epochs,
             patience=min(12, epochs), seed=config.seed) for rate in [.001, .003]]
-        run_neural_experiment(directory/"splits", config, candidates, directory/"neural")
+        run_neural_experiment(directory/"splits", config, candidates, directory/"neural", checkpoint=check_cancel)
         stage("Сравнение по validation", 75)
         comparison = run_comparison([directory/"baseline", directory/"neural"], directory/"comparison")
         selected = next(item for item in comparison["entries"] if item["id"] == comparison["selected"])
@@ -64,13 +72,18 @@ def run_job(directory, dataset, config, epochs):
             run_diagnostics(directory/"splits", directory/"baseline", directory/"diagnostics-selected")
         export_plots(directory/"neural", directory/"diagnostics-neural", directory/"figures")
         stage("Анализ validation выбранной модели", 95)
-        analyses = run_analysis_suite(directory/"splits", directory/family, directory/"analysis")
+        analyses = run_analysis_suite(directory/"splits", directory/family, directory/"analysis", checkpoint=check_cancel)
         package = run_research_report(directory/"splits", directory/family, directory/"research",
             existing_analyses=directory/"analysis")
+        check_cancel()
         state.update(state="completed", stage="Готово", progress=100,
             completed_at=datetime.now(timezone.utc).isoformat(), result={"selected_family": family,
                 "selected_model": selected["model"], "analysis_status": analyses, "research_status": package["status"], "metrics": selected["metrics"], "rows": comparison["rows"],
                 "data_origin": comparison["data_origin"], "intended_use": comparison["intended_use"]})
+        write_state(directory, state)
+    except TrainingCancelled:
+        state.update(state="cancelled", stage="Обучение остановлено", progress=0,
+            completed_at=datetime.now(timezone.utc).isoformat())
         write_state(directory, state)
     except Exception as exc:
         (directory/"error.log").write_text(traceback.format_exc(), encoding="utf-8")
@@ -192,7 +205,17 @@ class TrainingManager:
                     error="Предыдущий процесс завершился до окончания обучения. Создайте новый эксперимент.")
             except PermissionError:
                 pass
+        if state.get('state') in {'running', 'queued'} and (directory/'cancel.requested').exists():
+            state.update(state='cancelling', stage='Остановка после текущего шага')
         return {key: value for key, value in state.items() if key not in {"owner", "pid"}}
+
+    def cancel(self, job_id, owner):
+        with self.lock:
+            directory = self.directory(job_id, owner)
+            state = self.get(job_id, owner)
+            if state['state'] in {'running', 'queued', 'cancelling'}:
+                (directory/'cancel.requested').touch(exist_ok=True)
+            return self.get(job_id, owner)
 
     def list(self, owner):
         result = []

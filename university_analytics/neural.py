@@ -54,7 +54,7 @@ class NetworkConfig:
             raise DatasetError("Неверная конфигурация сети.") from exc
 
 
-def train_network(train, validation, config, parameters=None):
+def train_network(train, validation, config, parameters=None, *, checkpoint=None):
     """Test не принимается: эпоха выбирается только по внешней validation."""
     parameters = (parameters or NetworkConfig(seed=config.seed)).validate()
     config.validate()
@@ -81,6 +81,8 @@ def train_network(train, validation, config, parameters=None):
     history, best_model = [], None
     best_score, patience_reference, best_epoch, stale = -math.inf, -math.inf, 0, 0
     for epoch in range(1, parameters.max_epochs+1):
+        if checkpoint is not None:
+            checkpoint()
         try:
             classifier.partial_fit(train_x, train_y, classes=classes, sample_weight=weights)
         except ValueError as exc:

@@ -88,19 +88,31 @@ const trainingForm = document.querySelector("#training-form");
 const jobStage = document.querySelector("#job-stage");
 const jobMessage = document.querySelector("#job-message");
 let jobTimer;
+let activeJobId;
+const cancelJob = document.querySelector("#cancel-job");
 async function pollJob(id) {
   try {
     const response = await fetch(`/api/jobs/${id}`);
     const job = await response.json();
     if (!response.ok) throw new Error(job.error || "Эксперимент недоступен.");
+    activeJobId = id;
+    cancelJob.hidden = !['running','queued','cancelling'].includes(job.state);
+    cancelJob.disabled = job.state === 'cancelling';
     jobStage.textContent = job.stage;
     document.querySelector("#job-progress").value = job.progress;
-    if (["running", "queued"].includes(job.state)) {
+    if (["running", "queued", "cancelling"].includes(job.state)) {
       jobMessage.textContent = "Можно продолжать работу со страницей. Статус обновляется автоматически.";
       jobTimer = setTimeout(() => pollJob(id), 1200);
     } else {
       trainingForm.querySelector("#train-submit").disabled = false;
       if (job.state === "failed") throw new Error(job.error);
+      if (job.state === 'cancelled') {
+        jobMessage.textContent = 'Эксперимент остановлен. Частичные результаты не выдаются за готовую модель.';
+        document.querySelector('#job-metrics').replaceChildren();
+        document.querySelector('#job-artifacts').replaceChildren();
+        document.querySelector('#job-figures').replaceChildren();
+        await refreshJobs(); return;
+      }
       const label = {linear: "линейная", dummy: "константная", neural: "нейросеть"}[job.result.selected_model] || job.result.selected_model;
       jobMessage.textContent = `Выбрана модель: ${label}, по validation. Данные: ${job.result.data_origin}.`;
       if (job.result.research_status === "partial") jobMessage.textContent += " Некоторые анализы недоступны; причины сохранены в отчёте.";
@@ -202,4 +214,14 @@ preflightButton.addEventListener('click', async () => {
     const hash = document.createElement('p'); hash.textContent = `SHA-256: ${data.source_sha256}`; preflightResult.append(hash);
   } catch (error) { preflightResult.textContent = error.message; }
   finally { preflightButton.disabled = false; }
+});
+
+cancelJob.addEventListener('click', async () => {
+  cancelJob.disabled = true;
+  try {
+    const response = await fetch(`/api/jobs/${activeJobId}/cancel`, {method:'POST', headers:{'X-CSRF-Token':document.querySelector('meta[name="csrf-token"]').content}});
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Не удалось остановить обучение.');
+    clearTimeout(jobTimer); await pollJob(activeJobId);
+  } catch (error) { jobMessage.textContent=error.message; cancelJob.disabled=false; }
 });

@@ -204,6 +204,7 @@ def create_app(repository=None):
             return jsonify(report=report, preview=preview, csv=contents)
 
     @app.post("/api/train")
+    @app.post("/api/train/validate")
     def train():
         try:
             epochs = int(request.form.get("epochs", "60"))
@@ -221,6 +222,9 @@ def create_app(repository=None):
                 raise DatasetError("Не удалось прочитать JSON-контракт.") from exc
         with tempfile.TemporaryDirectory(prefix="university-train-") as folder:
             source = csv_upload(Path(folder))
+            if request.path.endswith('/validate'):
+                _, _, summary = manager.prepare(source, values, epochs)
+                return jsonify(summary)
             job = manager.submit(source, values, session.setdefault("workspace_id", secrets.token_urlsafe(32)), epochs)
         return jsonify(job), 202
 
@@ -238,7 +242,8 @@ def create_app(repository=None):
         comparison = json.loads((directory/"comparison/comparison.json").read_text(encoding="utf-8"))
         return jsonify(selected=state["result"], comparison=comparison,
             files=[{"name": name, "label": label} for name, label in ARTIFACT_LABELS.items()
-                if not name.startswith("research") or state["result"].get("research_status")])
+                if (not name.startswith("research") or state["result"].get("research_status"))
+                and (name != "preflight.json" or (directory/name).is_file())])
 
     @app.get("/api/jobs/<job_id>/download/<name>")
     def job_download(job_id, name):

@@ -88,45 +88,69 @@ class TrainingManager:
         self.executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="university-training")
         self.active = None
 
+    def prepare(self, source, values, epochs=60):
+        if type(epochs) is not int or not 1 <= epochs <= 100:
+            raise DatasetError('Для интерфейса допустимо от 1 до 100 эпох.')
+        data = load_dataset(str(source))
+        data = Dataset(data.columns, data.rows, "gui-upload", data.sha256, data.origin_kind)
+        if values is None:
+            if data.origin_kind != "synthetic":
+                raise DatasetError("Для собственных данных загрузите JSON-контракт эксперимента.")
+            config = ExperimentConfig.from_file(self.repository/"data/simulation-v1/experiment.json")
+        else:
+            config = ExperimentConfig.from_dict(values)
+        config.check_columns(data)
+        if config.task != "classification":
+            raise DatasetError("Обучение в текущем интерфейсе поддерживает классификацию.")
+        NetworkConfig(max_epochs=epochs, seed=config.seed).validate()
+        checks = validate_dataset(data, config.target)
+        if not checks["ok"]:
+            raise DatasetError("; ".join(checks["issues"]))
+        if len(data.rows) > 10000 or len(config.features) > 100:
+            raise DatasetError("В интерфейсе обучение ограничено 10 000 строками и 100 входными признаками.")
+        labels = target_vector(data, config)
+        if not 2 <= len(set(labels)) <= 20:
+            raise DatasetError("Для обучения требуется от 2 до 20 классов.")
+        expanded = len(config.numeric_features)
+        for feature in config.categorical_features:
+            index = data.columns.index(feature)
+            expanded += len({row[index] for row in data.rows})+1
+        if expanded > 512:
+            raise DatasetError("Слишком много категорий: после кодирования допустимо до 512 входов.")
+        feature_matrix(data, config)
+        split = split_dataset(data, seed=config.seed, group_column=config.group_column)
+        target_index = data.columns.index(config.target)
+        train_classes = {row[target_index] for row in split.partitions['train']}
+        if len(train_classes) < 2:
+            raise DatasetError('В train должно быть минимум два класса; проверьте независимые группы и распределение цели.')
+        summary = {'schema_version': 1, 'source_sha256': data.sha256, 'data_origin': data.origin_kind,
+            'rows': len(data.rows), 'columns': len(data.columns), 'target': config.target,
+            'features': list(config.features), 'excluded_columns': list(config.excluded_columns),
+            'group_column': config.group_column, 'seed': config.seed, 'epochs': epochs,
+            'encoded_feature_upper_bound': expanded,
+            'partitions': {name: {'rows': len(rows), 'groups': split.group_counts[name]}
+                           for name, rows in split.partitions.items()},
+            'warnings': checks['warnings'],
+            'limitation': 'Проверка структуры не измеряет качество будущей модели. Test не используется для выбора параметров.'}
+        return data, config, summary
+
     def submit(self, source, values, owner, epochs=60):
         if type(epochs) is not int or not 1 <= epochs <= 100:
             raise DatasetError("Для интерфейса допустимо от 1 до 100 эпох.")
         with self.lock:
             if self.active is not None and not self.active.done():
                 raise TrainingBusy("Один эксперимент уже выполняется. Дождитесь его завершения.")
-            data = load_dataset(str(source))
-            data = Dataset(data.columns, data.rows, "gui-upload", data.sha256, data.origin_kind)
-            if values is None:
-                if data.origin_kind != "synthetic":
-                    raise DatasetError("Для собственных данных загрузите JSON-контракт эксперимента.")
-                config = ExperimentConfig.from_file(self.repository/"data/simulation-v1/experiment.json")
-            else:
-                config = ExperimentConfig.from_dict(values)
-            config.check_columns(data)
-            if config.task != "classification":
-                raise DatasetError("Обучение в текущем интерфейсе поддерживает классификацию.")
-            NetworkConfig(max_epochs=epochs, seed=config.seed).validate()
-            checks = validate_dataset(data, config.target)
-            if not checks["ok"]:
-                raise DatasetError("; ".join(checks["issues"]))
-            if len(data.rows) > 10000 or len(config.features) > 100:
-                raise DatasetError("В интерфейсе обучение ограничено 10 000 строками и 100 входными признаками.")
-            labels = target_vector(data, config)
-            if not 2 <= len(set(labels)) <= 20:
-                raise DatasetError("Для обучения требуется от 2 до 20 классов.")
-            expanded = len(config.numeric_features)
-            for feature in config.categorical_features:
-                index = data.columns.index(feature)
-                expanded += len({row[index] for row in data.rows})+1
-            if expanded > 512:
-                raise DatasetError("Слишком много категорий: после кодирования допустимо до 512 входов.")
-            feature_matrix(data, config)
-            split_dataset(data, seed=config.seed, group_column=config.group_column)
+            data, config, preflight = self.prepare(source, values, epochs)
             job_id = uuid.uuid4().hex
             directory = self.root/job_id
             directory.mkdir(mode=0o700)
             try:
-                shutil.copyfile(source, directory/"input.csv")
+                with Path(source).open('rb') as stream:
+                    original = stream.read(20*1024*1024+1)
+                if hashlib.sha256(original).hexdigest() != data.sha256:
+                    raise DatasetError('Исходный файл изменился после проверки. Повторите загрузку.')
+                (directory/'input.csv').write_bytes(original)
+                (directory/'preflight.json').write_text(json.dumps(preflight, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
                 (directory/"config.json").write_text(json.dumps(config.as_dict(), ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
                 state = {"id": job_id, "owner": hashlib.sha256(owner.encode()).hexdigest(), "pid": os.getpid(),
                     "state": "queued", "stage": "Ожидает запуска", "progress": 0,

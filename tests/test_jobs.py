@@ -55,6 +55,7 @@ class TrainingJobTests(unittest.TestCase):
             archive = client.get("/api/jobs/"+job_id+"/download/experiment.zip")
             with ZipFile(io.BytesIO(archive.data)) as bundle:
                 self.assertIn("input.csv", bundle.namelist())
+                self.assertIn("preflight.json", bundle.namelist())
                 self.assertNotIn("status.json", bundle.namelist())
                 self.assertIn("SHA256SUMS.json", bundle.namelist())
                 self.assertIn("analysis/uncertainty/analysis.json", bundle.namelist())
@@ -98,3 +99,36 @@ class TrainingJobTests(unittest.TestCase):
                 self.assertEqual(list(manager.root.iterdir()), [])
             finally:
                 manager.close()
+
+
+    def test_preflight_checks_without_starting_or_writing_job(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder);source, config=self.inputs(root)
+            app=create_app(root);app.config['TESTING']=True
+            manager=app.extensions['training_manager'];self.addCleanup(manager.close)
+            client=app.test_client();client.get('/')
+            with client.session_transaction() as state:token=state['csrf']
+            def payload():return {'data':(io.BytesIO(source.read_bytes()),'data.csv'),
+                'config':(io.BytesIO(json.dumps(config).encode()),'config.json'),'epochs':'3'}
+            self.assertEqual(client.post('/api/train/validate',data=payload()).status_code,403)
+            result=client.post('/api/train/validate',data=payload(),headers={'X-CSRF-Token':token})
+            self.assertEqual(result.status_code,200,result.json)
+            self.assertEqual(result.json['rows'],1000)
+            self.assertEqual(sum(part['rows'] for part in result.json['partitions'].values()),1000)
+            self.assertEqual(result.json['group_column'],'employee_id')
+            self.assertIsNone(manager.active)
+            self.assertEqual(list(manager.root.iterdir()),[])
+
+    def test_changed_source_is_rejected_before_enqueue(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder);source,config=self.inputs(root)
+            manager=TrainingManager(root);self.addCleanup(manager.close)
+            prepare=manager.prepare
+            def changing(*args):
+                result=prepare(*args)
+                source.write_text('changed')
+                return result
+            with patch.object(manager,'prepare',side_effect=changing),self.assertRaises(DatasetError):
+                manager.submit(source,config,'owner',2)
+            self.assertIsNone(manager.active)
+            self.assertEqual(list(manager.root.iterdir()),[])

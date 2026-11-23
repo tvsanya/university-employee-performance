@@ -99,7 +99,7 @@ async function pollJob(id) {
       jobMessage.textContent = "Можно продолжать работу со страницей. Статус обновляется автоматически.";
       jobTimer = setTimeout(() => pollJob(id), 1200);
     } else {
-      trainingForm.querySelector("button").disabled = false;
+      trainingForm.querySelector("#train-submit").disabled = false;
       if (job.state === "failed") throw new Error(job.error);
       const label = {linear: "линейная", dummy: "константная", neural: "нейросеть"}[job.result.selected_model] || job.result.selected_model;
       jobMessage.textContent = `Выбрана модель: ${label}, по validation. Данные: ${job.result.data_origin}.`;
@@ -111,14 +111,14 @@ async function pollJob(id) {
     }
   } catch (error) {
     jobMessage.textContent = error.message;
-    trainingForm.querySelector("button").disabled = false;
+    trainingForm.querySelector("#train-submit").disabled = false;
   }
 }
 trainingForm.addEventListener("submit", async event => {
   event.preventDefault();
   if (!validSource(trainingForm)) return;
   clearTimeout(jobTimer);
-  trainingForm.querySelector("button").disabled = true;
+  trainingForm.querySelector("#train-submit").disabled = true;
   jobMessage.textContent = "Проверка входных данных…";
   document.querySelector("#job-metrics").replaceChildren();
   document.querySelector("#job-artifacts").replaceChildren();
@@ -130,11 +130,11 @@ trainingForm.addEventListener("submit", async event => {
     await pollJob(job.id);
   } catch (error) {
     jobMessage.textContent = error.message;
-    trainingForm.querySelector("button").disabled = false;
+    trainingForm.querySelector("#train-submit").disabled = false;
   }
 });
 const previousJob = sessionStorage.getItem("university-job-id");
-if (previousJob) { trainingForm.querySelector("button").disabled = true; pollJob(previousJob); }
+if (previousJob) { trainingForm.querySelector("#train-submit").disabled = true; pollJob(previousJob); }
 
 async function showArtifacts(id) {
   const response = await fetch(`/api/jobs/${id}/artifacts`);
@@ -178,3 +178,28 @@ async function refreshJobs() {
   if (!data.jobs.length) container.textContent = "После запуска здесь появятся ваши эксперименты.";
 }
 refreshJobs().catch(error => { document.querySelector("#my-jobs").textContent = error.message; });
+
+const preflightButton = document.querySelector('#preflight');
+const preflightResult = document.querySelector('#preflight-result');
+trainingForm.addEventListener('input', () => { preflightResult.hidden = true; });
+preflightButton.addEventListener('click', async () => {
+  if (!validSource(trainingForm)) return;
+  preflightButton.disabled = true; preflightResult.hidden = false;
+  preflightResult.textContent = 'Проверка структуры и разбиения…';
+  try {
+    const response = await fetch('/api/train/validate', {method: 'POST', body: new FormData(trainingForm), headers: {'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content}});
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Не удалось проверить настройки.');
+    preflightResult.replaceChildren();
+    const title = document.createElement('h3'); title.textContent = 'Настройки проверены'; preflightResult.append(title);
+    const text = document.createElement('p');
+    text.textContent = `${data.rows} строк, ${data.columns} колонок. Цель: ${data.target}. Признаков: ${data.features.length}. Данные: ${data.data_origin}. Эпох: ${data.epochs}.`;
+    preflightResult.append(text);
+    for (const [name, values] of Object.entries(data.partitions)) {
+      const row = document.createElement('p'); row.textContent = `${name}: ${values.rows} строк, ${values.groups} независимых групп.`; preflightResult.append(row);
+    }
+    for (const warning of [...data.warnings, data.limitation]) { const row = document.createElement('p'); row.textContent = warning; preflightResult.append(row); }
+    const hash = document.createElement('p'); hash.textContent = `SHA-256: ${data.source_sha256}`; preflightResult.append(hash);
+  } catch (error) { preflightResult.textContent = error.message; }
+  finally { preflightButton.disabled = false; }
+});

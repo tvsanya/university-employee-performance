@@ -9,6 +9,11 @@ from urllib.request import Request, urlopen
 from zipfile import BadZipFile, ZipFile
 
 MAX_BYTES = 20 * 1024 * 1024
+MAX_ROWS = 50000
+MAX_COLUMNS = 256
+MAX_CELLS = 2_000_000
+MAX_RECORDS = 100000
+MAX_RECORD_CHARS = 256 * 1024
 
 
 class DatasetError(ValueError):
@@ -74,20 +79,46 @@ def load_dataset(source: str, member: str | None = None, delimiter: str | None =
                 delimiter = ","
         if delimiter not in {",", ";", "\t", "|"}:
             raise DatasetError("Разделитель должен быть запятой, точкой с запятой, табуляцией или |.")
-        records = list(csv.reader(io.StringIO(text), delimiter=delimiter, strict=True))
+        rows = []
+        columns = None
+        stream = io.StringIO(text, newline='')
+        record_chars = 0
+        def bounded_lines():
+            nonlocal record_chars
+            while line := stream.readline(MAX_RECORD_CHARS+1):
+                record_chars += len(line)
+                if record_chars > MAX_RECORD_CHARS:
+                    raise DatasetError('Одна CSV-запись превышает 256 Ки символов.')
+                yield line
+        reader = csv.reader(bounded_lines(), delimiter=delimiter, strict=True)
+        seen = 0
+        while True:
+            record_chars = 0
+            try:
+                row = next(reader)
+            except StopIteration:
+                break
+            seen += 1
+            if seen > MAX_RECORDS:
+                raise DatasetError('CSV содержит больше 100 000 записей, включая пустые.')
+            if not row:
+                continue
+            if columns is None:
+                if len(row) > MAX_COLUMNS:
+                    raise DatasetError('CSV содержит больше 256 колонок.')
+                columns = tuple(name.strip() for name in row)
+                if any(not name for name in columns) or len(set(columns)) != len(columns):
+                    raise DatasetError('Названия колонок должны быть непустыми и уникальными.')
+                continue
+            if len(row) != len(columns):
+                raise DatasetError(f'После физической строки {reader.line_num}: ожидалось {len(columns)} значений, получено {len(row)}.')
+            if len(rows) >= MAX_ROWS or (len(rows)+1)*len(columns) > MAX_CELLS:
+                raise DatasetError('Предел CSV: 50 000 строк данных и 2 000 000 ячеек; сократите набор.')
+            rows.append(tuple(value.strip() for value in row))
     except csv.Error as exc:
-        raise DatasetError("Не удалось разобрать CSV.") from exc
-    records = [row for row in records if row]
-    if not records:
-        raise DatasetError("CSV не содержит заголовка.")
-    columns = tuple(name.strip() for name in records[0])
-    if any(not name for name in columns) or len(set(columns)) != len(columns):
-        raise DatasetError("Названия колонок должны быть непустыми и уникальными.")
-    rows = []
-    for number, row in enumerate(records[1:], start=2):
-        if len(row) != len(columns):
-            raise DatasetError(f"Строка {number}: ожидалось {len(columns)} значений, получено {len(row)}.")
-        rows.append(tuple(value.strip() for value in row))
+        raise DatasetError('Не удалось разобрать CSV: проверьте кавычки и длину полей.') from exc
+    if columns is None:
+        raise DatasetError('CSV не содержит заголовка.')
     origin = "unspecified"
     if "source_kind" in columns and rows:
         flags = {row[columns.index("source_kind")] for row in rows}

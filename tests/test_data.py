@@ -52,3 +52,23 @@ class DatasetLoadingTests(unittest.TestCase):
         for source in ["ftp://example.org/data.csv", "https://user:password@example.org/data.csv"]:
             with self.assertRaises(DatasetError):
                 read_source(source)
+
+
+    def test_row_column_cell_and_blank_record_limits(self):
+        for setting, limit, text in [
+            ('MAX_ROWS', 2, 'id\n1\n2\n3\n'),
+            ('MAX_COLUMNS', 2, 'a,b,c\n1,2,3\n'),
+            ('MAX_CELLS', 3, 'a,b\n1,2\n3,4\n'),
+            ('MAX_RECORDS', 3, 'a\n\n\n\n')]:
+            with self.subTest(setting=setting), patch('university_analytics.data.'+setting, limit):
+                with self.assertRaises(DatasetError):load_dataset(self.write(text), delimiter=',')
+        with patch('university_analytics.data.MAX_ROWS', 2):
+            self.assertEqual(len(load_dataset(self.write('id\n1\n2\n')).rows), 2)
+
+    def test_bounded_multiline_and_unterminated_record(self):
+        dataset=load_dataset(self.write('a,b\r\n1,"line1\r\nline2"\r\n'), delimiter=',')
+        self.assertEqual(dataset.rows[0], ('1','line1\r\nline2'))
+        for text in ['a,b\n1,"xxxxxxxxxxxxxxxx"\n', 'a,b\n1,"a\nb\nc\nd\ne\nf\ng"\n']:
+            with patch('university_analytics.data.MAX_RECORD_CHARS', 12), self.assertRaises(DatasetError):
+                load_dataset(self.write(text),delimiter=',')
+        with self.assertRaises(DatasetError):load_dataset(self.write('a,b\n1,"unclosed\n'),delimiter=',')

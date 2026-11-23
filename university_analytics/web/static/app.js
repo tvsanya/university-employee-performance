@@ -14,8 +14,23 @@ function table(container, headers, rows) {
   container.replaceChildren(result);
 }
 function note(text) { const node = document.createElement("p"); node.textContent = text; summary.append(node); }
+function validSource(target) {
+  const file = target.querySelector('input[name="data"]');
+  const address = target.querySelector('input[name="source_url"]');
+  file.setCustomValidity(""); address.setCustomValidity("");
+  const hasFile = file.files.length > 0, hasUrl = address.value.trim().length > 0;
+  if (!hasFile && !hasUrl) file.setCustomValidity("Выберите CSV-файл или укажите ссылку.");
+  if (hasFile && hasUrl) address.setCustomValidity("Оставьте один источник: файл или ссылку.");
+  return target.reportValidity();
+}
+for (const target of document.querySelectorAll("#data-form, #training-form")) {
+  target.addEventListener("input", () => {
+    target.querySelector('input[name="data"]').setCustomValidity("");
+    target.querySelector('input[name="source_url"]').setCustomValidity("");
+  });
+}
 async function run(action) {
-  if (!form.reportValidity()) return;
+  if (!validSource(form)) return;
   const buttons = form.querySelectorAll("button");
   buttons.forEach(button => { button.disabled = true; });
   statusNode.textContent = "Обработка файла…";
@@ -100,7 +115,7 @@ async function pollJob(id) {
 }
 trainingForm.addEventListener("submit", async event => {
   event.preventDefault();
-  if (!trainingForm.reportValidity()) return;
+  if (!validSource(trainingForm)) return;
   clearTimeout(jobTimer);
   trainingForm.querySelector("button").disabled = true;
   jobMessage.textContent = "Проверка входных данных…";

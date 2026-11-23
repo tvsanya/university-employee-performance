@@ -12,7 +12,8 @@ from itertools import islice
 from pathlib import Path
 from flask import Flask, abort, jsonify, render_template, request, session, send_file
 from werkzeug.exceptions import HTTPException
-from .data import DatasetError, MAX_BYTES, load_dataset
+from .data import DatasetError, MAX_BYTES, load_dataset, read_source
+from urllib.parse import urlparse
 from .prediction import run_prediction
 from .quality import profile_dataset
 from .jobs import TrainingManager, TrainingBusy, JobNotFound
@@ -126,9 +127,29 @@ def create_app(repository=None):
 
     def csv_upload(folder):
         uploaded = request.files.get("data")
-        if uploaded is None:
-            raise DatasetError("Выберите CSV с данными.")
-        contents = uploaded.read(MAX_BYTES+1)
+        address = request.form.get("source_url", "").strip()
+        has_file = uploaded is not None and bool(uploaded.filename)
+        if has_file == bool(address):
+            raise DatasetError("Выберите один источник: CSV-файл либо HTTP/HTTPS-ссылку.")
+        if address:
+            try:
+                parsed = urlparse(address)
+                valid = (len(address) <= 2048 and parsed.scheme in {"http", "https"} and parsed.hostname
+                    and not parsed.username and not parsed.password and not parsed.fragment
+                    and not any(ord(char) < 33 for char in address))
+                parsed.port
+            except ValueError as exc:
+                raise DatasetError("Некорректный адрес CSV.") from exc
+            if not valid:
+                raise DatasetError("Укажите HTTP/HTTPS-ссылку до2048 символов без учётных данных и фрагмента.")
+            try:
+                contents = read_source(address)
+            except DatasetError:
+                raise
+            except (OSError, ValueError) as exc:
+                raise DatasetError("Не удалось загрузить CSV по ссылке. Проверьте адрес и доступность источника.") from exc
+        else:
+            contents = uploaded.read(MAX_BYTES+1)
         if not contents or len(contents) > MAX_BYTES:
             raise DatasetError("CSV должен быть непустым и не превышать 20 МиБ.")
         path = folder/"input.csv"

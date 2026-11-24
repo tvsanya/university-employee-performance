@@ -1,3 +1,4 @@
+from .job_state import read_state, PUBLIC_FIELDS
 from .job_lock import TrainingLease
 """Один ограниченный фоновый эксперимент с результатами браузерной сессии."""
 import hashlib
@@ -238,25 +239,27 @@ class TrainingManager:
             return None
         return isinstance(marker,dict) and marker.get('job_id')==job_id and marker.get('runner_id')==state['runner_id']
 
-    def directory(self, job_id, owner):
+    def _owned_state(self, job_id, owner):
         if not isinstance(job_id, str) or len(job_id) != 32 or any(character not in "0123456789abcdef" for character in job_id):
             raise JobNotFound
         directory = self.root/job_id
-        if directory.resolve().parent != self.root.resolve():
+        if directory.is_symlink() or directory.resolve().parent != self.root.resolve():
             raise JobNotFound
         try:
-            state = json.loads((directory/"status.json").read_text(encoding="utf-8"))
-        except (OSError, ValueError) as exc:
+            state = read_state(directory/"status.json")
+        except (OSError, ValueError, UnicodeError) as exc:
             raise JobNotFound from exc
         if not isinstance(state, dict) or not isinstance(state.get("owner"), str) or state.get("id") != job_id:
             raise JobNotFound
         if not hmac.compare_digest(state["owner"], hashlib.sha256(owner.encode()).hexdigest()):
             raise JobNotFound
-        return directory
+        return directory, state
+
+    def directory(self, job_id, owner):
+        return self._owned_state(job_id, owner)[0]
 
     def get(self, job_id, owner):
-        directory = self.directory(job_id, owner)
-        state = json.loads((directory/"status.json").read_text(encoding="utf-8"))
+        directory, state = self._owned_state(job_id, owner)
         if state.get('state') in {'queued','running'} and state.get('runner_id'):
             if self._runner_alive(job_id,state) is False:
                 state.update(state='failed',stage='Запуск прерван',progress=0,
@@ -276,7 +279,7 @@ class TrainingManager:
                 pass
         if state.get('state') in {'running', 'queued'} and (directory/'cancel.requested').exists():
             state.update(state='cancelling', stage='Остановка после текущего шага')
-        return {key: value for key, value in state.items() if key not in {"owner", "pid", "runner_id"}}
+        return {key: value for key, value in state.items() if key in PUBLIC_FIELDS}
 
     def cancel(self, job_id, owner):
         with self.lock:

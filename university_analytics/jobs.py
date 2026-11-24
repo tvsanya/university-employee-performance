@@ -275,7 +275,7 @@ class TrainingManager:
                 (directory/'cancel.requested').touch(exist_ok=True)
             return self.get(job_id, owner)
 
-    def list(self, owner):
+    def list_page(self, owner, before=None):
         result = []
         for directory in self.root.iterdir():
             if not directory.is_dir():
@@ -284,7 +284,33 @@ class TrainingManager:
                 result.append(self.get(directory.name, owner))
             except JobNotFound:
                 continue
-        return sorted(result, key=lambda item: item["created_at"], reverse=True)[:20]
+        result.sort(key=lambda item:(item['created_at'],item['id']),reverse=True)
+        total=len(result)
+        if before:
+            anchor=self.get(before,owner)
+            boundary=(anchor['created_at'],anchor['id'])
+            result=[item for item in result if (item['created_at'],item['id'])<boundary]
+        page=result[:20]
+        return {'jobs':page,'total':total,'next':page[-1]['id'] if len(result)>20 else None}
+
+    def list(self, owner):
+        return self.list_page(owner)['jobs']
+
+    def delete(self,job_id,owner):
+        with self.lock:
+            directory=self.directory(job_id,owner)
+            if self.get(job_id,owner)['state'] not in {'completed','failed','cancelled'}:
+                raise TrainingBusy('Сначала остановите эксперимент и дождитесь завершения рабочего шага.')
+            trash=self.root.parent/'gui-trash'
+            trash.mkdir(mode=0o700,exist_ok=True)
+            if trash.is_symlink():raise DatasetError('Каталог очистки не должен быть ссылкой.')
+            target=trash/(job_id+'-'+uuid.uuid4().hex)
+            try:directory.rename(target)
+            except FileNotFoundError:raise JobNotFound from None
+        pending=False
+        try:shutil.rmtree(target)
+        except OSError:pending=True
+        return {'deleted':True,'cleanup_pending':pending}
 
     def close(self):
         self.executor.shutdown(wait=True, cancel_futures=True)

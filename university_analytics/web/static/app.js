@@ -94,6 +94,7 @@ async function pollJob(id) {
   try {
     const response = await fetch(`/api/jobs/${id}`);
     const job = await response.json();
+    if (sessionStorage.getItem("university-job-id")!==id) return;
     if (!response.ok) throw new Error(job.error || "Эксперимент недоступен.");
     activeJobId = id;
     cancelJob.hidden = !['running','queued','cancelling'].includes(job.state);
@@ -118,6 +119,7 @@ async function pollJob(id) {
       if (job.result.research_status === "partial") jobMessage.textContent += " Некоторые анализы недоступны; причины сохранены в отчёте.";
       await showArtifacts(id);
       await refreshJobs();
+      if (sessionStorage.getItem("university-job-id")!==id) return;
       const parts = ["train", "validation", "test"];
       table(document.querySelector("#job-metrics"), ["Выборка", "Accuracy", "Macro-F1"], parts.map(name => [name, job.result.metrics[name].accuracy.toFixed(4), job.result.metrics[name].macro_f1.toFixed(4)]));
     }
@@ -151,6 +153,7 @@ if (previousJob) { trainingForm.querySelector("#train-submit").disabled = true; 
 async function showArtifacts(id) {
   const response = await fetch(`/api/jobs/${id}/artifacts`);
   const data = await response.json();
+  if (sessionStorage.getItem("university-job-id")!==id) return;
   if (!response.ok) throw new Error(data.error || "Результаты недоступны.");
   const links = document.querySelector("#job-artifacts"); links.replaceChildren();
   data.files.forEach(item => {
@@ -168,25 +171,34 @@ async function showArtifacts(id) {
     figure.append(image, caption); figures.append(figure);
   });
 }
-async function refreshJobs() {
+let nextJobsCursor=null;
+async function refreshJobs(before=null) {
   await predefinedReady;
-  const response = await fetch("/api/jobs");
+  const response = await fetch("/api/jobs"+(before?"?before="+encodeURIComponent(before):""));
   const data = await response.json();
   if (!response.ok) return;
   const container = document.querySelector("#my-jobs"); container.replaceChildren();
   const select = document.querySelector("#experiment"), value = select.value;
-  select.querySelectorAll('option[data-job]').forEach(option => option.remove());
+  select.querySelectorAll('option[data-job]').forEach(option => { if(option.value!==value) option.remove(); });
   data.jobs.forEach(job => {
     const row = document.createElement("p"), open = document.createElement("button"); open.type = "button";
+    row.dataset.jobId=job.id;
     open.textContent = new Date(job.created_at).toLocaleString("ru-RU") + " · " + job.stage;
     open.addEventListener("click", () => { clearTimeout(jobTimer); sessionStorage.setItem("university-job-id", job.id); pollJob(job.id); }); row.append(open); container.append(row);
-    if (job.state === "completed") {
+    if (['completed','failed','cancelled'].includes(job.state)) {
+      const remove=document.createElement('button');remove.type='button';remove.textContent='Удалить результат';
+      remove.addEventListener('click',()=>deleteJob(job.id));row.append(remove);
+    }
+    if (job.state === "completed" && ![...select.options].some(option=>option.value==="job:"+job.id)) {
       const option = document.createElement("option"); option.value = "job:"+job.id; option.dataset.job = job.id;
       option.textContent = "Мой эксперимент · " + new Date(job.created_at).toLocaleString("ru-RU") + " · " + job.result.selected_model;
       select.append(option);
     }
   });
   if ([...select.options].some(option => option.value === value)) select.value = value;
+  nextJobsCursor=data.next;
+  document.querySelector("#next-jobs").hidden=!data.next;
+  document.querySelector("#first-jobs").hidden=!before;
   if (!data.jobs.length) container.textContent = "После запуска здесь появятся ваши эксперименты.";
 }
 refreshJobs().catch(error => { document.querySelector("#my-jobs").textContent = error.message; });
@@ -225,3 +237,21 @@ cancelJob.addEventListener('click', async () => {
     clearTimeout(jobTimer); await pollJob(activeJobId);
   } catch (error) { jobMessage.textContent=error.message; cancelJob.disabled=false; }
 });
+
+document.querySelector('#next-jobs').addEventListener('click',()=>refreshJobs(nextJobsCursor));
+document.querySelector('#first-jobs').addEventListener('click',()=>refreshJobs());
+async function deleteJob(id) {
+  if (!window.confirm('Удалить исходный CSV и результаты этого эксперимента? Скачайте ZIP заранее, если он нужен.')) return;
+  try {
+    const response=await fetch(`/api/jobs/${id}/delete`,{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':document.querySelector('meta[name="csrf-token"]').content},body:JSON.stringify({confirm:id})});
+    const data=await response.json();if(!response.ok) throw new Error(data.error||'Не удалось удалить результат.');
+    document.querySelector(`#experiment option[value="job:${id}"]`)?.remove();
+    if(sessionStorage.getItem('university-job-id')===id){
+      clearTimeout(jobTimer);sessionStorage.removeItem('university-job-id');activeJobId=null;cancelJob.hidden=true;
+      jobStage.textContent='Эксперимент удалён';
+      for(const name of ['#job-metrics','#job-artifacts','#job-figures']) document.querySelector(name).replaceChildren();
+    }
+    jobMessage.textContent=data.cleanup_pending?'Результат убран из списка; часть файлов ожидает очистки из-за ошибки файловой системы.':'Результат удалён.';
+    await refreshJobs();
+  } catch(error){jobMessage.textContent=error.message;}
+}

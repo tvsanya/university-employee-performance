@@ -7,3 +7,5 @@
 .plots figure{margin:15px 0}.plots figcaption{font-size:14px;color:#617486}#job-artifacts a{font-size:14px;color:var(--accent)}
 
 .workspace>.panel{min-width:0}.panel{overflow-wrap:anywhere}#job-metrics{max-width:100%;overflow-x:auto}@media(max-width:800px){.workspace{grid-template-columns:minmax(0,1fr)}}
+
+#my-jobs p{display:flex;gap:12px;flex-wrap:wrap;align-items:center}

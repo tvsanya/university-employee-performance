@@ -228,6 +228,12 @@ def create_app(repository=None):
             job = manager.submit(source, values, session.setdefault("workspace_id", secrets.token_urlsafe(32)), epochs)
         return jsonify(job), 202
 
+    @app.post('/api/jobs/<job_id>/delete')
+    def job_delete(job_id):
+        if request.get_json(silent=True)!={'confirm':job_id}:
+            raise DatasetError('Подтвердите удаление выбранного эксперимента.')
+        return jsonify(manager.delete(job_id,session.get('workspace_id','')))
+
     @app.post('/api/jobs/<job_id>/cancel')
     def job_cancel(job_id):
         return jsonify(manager.cancel(job_id, session.get('workspace_id', '')))
@@ -238,7 +244,7 @@ def create_app(repository=None):
 
     @app.get("/api/jobs")
     def job_list():
-        return jsonify(jobs=manager.list(session.get("workspace_id", "")))
+        return jsonify(manager.list_page(session.get("workspace_id", ""),before=request.args.get("before")))
 
     @app.get("/api/jobs/<job_id>/artifacts")
     def job_artifacts(job_id):

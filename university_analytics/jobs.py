@@ -1,3 +1,4 @@
+from .job_lock import TrainingLease
 """Один ограниченный фоновый эксперимент с результатами браузерной сессии."""
 import hashlib
 import hmac
@@ -100,6 +101,7 @@ class TrainingManager:
         self.lock = threading.Lock()
         self.executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="university-training")
         self.active = None
+        self.lease = TrainingLease(self.root.parent/"gui-training.lock")
 
     def prepare(self, source, values, epochs=60):
         if type(epochs) is not int or not 1 <= epochs <= 100:
@@ -153,27 +155,41 @@ class TrainingManager:
         with self.lock:
             if self.active is not None and not self.active.done():
                 raise TrainingBusy("Один эксперимент уже выполняется. Дождитесь его завершения.")
-            data, config, preflight = self.prepare(source, values, epochs)
-            job_id = uuid.uuid4().hex
-            directory = self.root/job_id
-            directory.mkdir(mode=0o700)
+            if not self.lease.acquire():
+                raise TrainingBusy('Обучение уже выполняется в другом окне или процессе приложения.')
+            enqueued = False
             try:
-                with Path(source).open('rb') as stream:
-                    original = stream.read(20*1024*1024+1)
-                if hashlib.sha256(original).hexdigest() != data.sha256:
-                    raise DatasetError('Исходный файл изменился после проверки. Повторите загрузку.')
-                (directory/'input.csv').write_bytes(original)
-                (directory/'preflight.json').write_text(json.dumps(preflight, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
-                (directory/"config.json").write_text(json.dumps(config.as_dict(), ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
-                state = {"id": job_id, "owner": hashlib.sha256(owner.encode()).hexdigest(), "pid": os.getpid(),
-                    "state": "queued", "stage": "Ожидает запуска", "progress": 0,
-                    "created_at": datetime.now(timezone.utc).isoformat(), "epochs": epochs}
-                write_state(directory, state)
-                self.active = self.executor.submit(run_job, directory, data, config, epochs)
-            except BaseException:
-                shutil.rmtree(directory, ignore_errors=True)
-                raise
-            return self.get(job_id, owner)
+                data, config, preflight = self.prepare(source, values, epochs)
+                job_id = uuid.uuid4().hex
+                directory = self.root/job_id
+                directory.mkdir(mode=0o700)
+                try:
+                    with Path(source).open('rb') as stream:
+                        original = stream.read(20*1024*1024+1)
+                    if hashlib.sha256(original).hexdigest() != data.sha256:
+                        raise DatasetError('Исходный файл изменился после проверки. Повторите загрузку.')
+                    (directory/'input.csv').write_bytes(original)
+                    (directory/'preflight.json').write_text(json.dumps(preflight, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
+                    (directory/"config.json").write_text(json.dumps(config.as_dict(), ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
+                    state = {"id": job_id, "owner": hashlib.sha256(owner.encode()).hexdigest(), "pid": os.getpid(),
+                        "state": "queued", "stage": "Ожидает запуска", "progress": 0,
+                        "created_at": datetime.now(timezone.utc).isoformat(), "epochs": epochs}
+                    write_state(directory, state)
+                    self.active = self.executor.submit(self._run, directory, data, config, epochs)
+                    enqueued = True
+                except BaseException:
+                    shutil.rmtree(directory, ignore_errors=True)
+                    raise
+                return self.get(job_id, owner)
+            finally:
+                if not enqueued:
+                    self.lease.release()
+
+    def _run(self, directory, data, config, epochs):
+        try:
+            run_job(directory, data, config, epochs)
+        finally:
+            self.lease.release()
 
     def directory(self, job_id, owner):
         if not isinstance(job_id, str) or len(job_id) != 32 or any(character not in "0123456789abcdef" for character in job_id):
@@ -230,3 +246,4 @@ class TrainingManager:
 
     def close(self):
         self.executor.shutdown(wait=True, cancel_futures=True)
+        self.lease.release()

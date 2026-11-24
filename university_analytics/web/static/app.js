@@ -221,6 +221,9 @@ preflightButton.addEventListener('click', async () => {
     preflightResult.append(text);
     for (const [name, values] of Object.entries(data.partitions)) {
       const row = document.createElement('p'); row.textContent = `${name}: ${values.rows} строк, ${values.groups} независимых групп.`; preflightResult.append(row);
+      if (data.class_counts?.[name]) {
+        const counts = document.createElement('p'); counts.textContent = 'Классы: ' + Object.entries(data.class_counts[name]).map(([label, count]) => `${label}: ${count}`).join('; '); preflightResult.append(counts);
+      }
     }
     for (const warning of [...data.warnings, data.limitation]) { const row = document.createElement('p'); row.textContent = warning; preflightResult.append(row); }
     const hash = document.createElement('p'); hash.textContent = `SHA-256: ${data.source_sha256}`; preflightResult.append(hash);

@@ -1,6 +1,7 @@
 from .job_lock import TrainingLease
 """Один ограниченный фоновый эксперимент с результатами браузерной сессии."""
 import hashlib
+from collections import Counter
 import hmac
 import json
 import os
@@ -151,7 +152,17 @@ class TrainingManager:
         train_classes = {row[target_index] for row in split.partitions['train']}
         if len(train_classes) < 2:
             raise DatasetError('В train должно быть минимум два класса; проверьте независимые группы и распределение цели.')
-        summary = {'schema_version': 1, 'source_sha256': data.sha256, 'data_origin': data.origin_kind,
+        class_counts = {name: dict(sorted(Counter(row[target_index] for row in rows).items()))
+                        for name, rows in split.partitions.items()}
+        for name in ('validation', 'test'):
+            unseen = set(class_counts[name]) - train_classes
+            if unseen:
+                raise DatasetError(f'В {name} есть классы, отсутствующие в train. Все классы должны иметь обучающие примеры; проверьте состав независимых групп.')
+            absent = train_classes - set(class_counts[name])
+            if absent:
+                checks['warnings'].append(f'{name}: отсутствует {len(absent)} из {len(train_classes)} классов train; поклассовые метрики ограничены покрытием выборки.')
+        summary = {'schema_version': 2, 'class_counts': class_counts, 'class_labels': sorted(train_classes),
+            'source_sha256': data.sha256, 'data_origin': data.origin_kind,
             'rows': len(data.rows), 'columns': len(data.columns), 'target': config.target,
             'features': list(config.features), 'excluded_columns': list(config.excluded_columns),
             'group_column': config.group_column, 'seed': config.seed, 'epochs': epochs,

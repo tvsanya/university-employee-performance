@@ -258,3 +258,33 @@ async function deleteJob(id) {
     await refreshJobs();
   } catch(error){jobMessage.textContent=error.message;}
 }
+
+const storageSummary = document.querySelector('#storage-summary');
+const storageConfirm = document.querySelector('#storage-confirm');
+const storagePurge = document.querySelector('#storage-purge');
+const storageRefresh = document.querySelector('#storage-refresh');
+const mib = bytes => (bytes / 1048576).toLocaleString('ru-RU', {maximumFractionDigits: 2});
+let storageBusy = false;
+function storageButtons() { storageRefresh.disabled = storageBusy; storagePurge.disabled = storageBusy || !storageConfirm.checked; }
+storageConfirm.addEventListener('change', storageButtons);
+async function refreshStorage() {
+  storageBusy = true; storageButtons();
+  try {
+    const response = await fetch('/api/storage'); const data = await response.json();
+    if (!response.ok) throw new Error(data.error);
+    storageSummary.textContent = `Экспериментов: ${data.jobs}, файлы: ${mib(data.job_bytes)} МиБ. Корзина: ${data.trash}, ${mib(data.trash_bytes)} МиБ. Свободно на диске: ${mib(data.disk_free_bytes)} МиБ.`;
+  } catch (error) { storageSummary.textContent = error.message; }
+  finally { storageBusy = false; storageButtons(); }
+}
+storageRefresh.addEventListener('click', refreshStorage);
+storagePurge.addEventListener('click', async () => {
+  if (!storageConfirm.checked || storageBusy) return;
+  storageBusy = true; storageButtons();
+  try {
+    const response = await fetch('/api/storage/purge-trash', {method: 'POST', headers: {'Content-Type': 'application/json', 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content}, body: JSON.stringify({confirm: 'purge-own-trash'})});
+    const data = await response.json(); if (!response.ok) throw new Error(data.error);
+    storageConfirm.checked = false;
+    storageSummary.textContent = `Удалено каталогов: ${data.deleted_directories}. Осталось из-за ошибок: ${data.failed_directories}. Нажмите «Проверить место» для нового подсчёта.`;
+  } catch (error) { storageSummary.textContent = error.message; }
+  finally { storageBusy = false; storageButtons(); }
+});

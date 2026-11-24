@@ -228,6 +228,19 @@ def create_app(repository=None):
             job = manager.submit(source, values, session.setdefault("workspace_id", secrets.token_urlsafe(32)), epochs)
         return jsonify(job), 202
 
+    @app.get('/api/storage')
+    def storage():
+        from .job_storage import storage_report
+        return jsonify(storage_report(manager.root,session.get('workspace_id','')))
+
+    @app.post('/api/storage/purge-trash')
+    def purge_trash():
+        from .job_storage import purge_own_trash
+        if request.get_json(silent=True)!={'confirm':'purge-own-trash'}:
+            raise DatasetError('Подтвердите очистку своей корзины.')
+        with manager.lock:
+            return jsonify(purge_own_trash(manager.root,session.get('workspace_id','')))
+
     @app.post('/api/jobs/<job_id>/delete')
     def job_delete(job_id):
         if request.get_json(silent=True)!={'confirm':job_id}:

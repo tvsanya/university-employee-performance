@@ -1,6 +1,8 @@
 """Фактический Chrome: CSV по HTTP, обучение, прогноз и приватные артефакты."""
 import argparse
 import csv
+from datetime import datetime,timedelta,timezone
+import uuid
 import hashlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from importlib.metadata import version
@@ -129,6 +131,32 @@ def verify(app_python, output):
                     assert context.request.get(url+'/api/jobs/'+cancelled_id).json()['state']=='cancelled'
                     assert context.request.get(url+'/api/jobs/'+cancelled_id+'/download/model.json').status==409
                     checks.append('real_training_cancelled_without_ready_model');shot('cancelled-desktop.png','#training-result')
+                    cancelled_row=page.locator(f'#my-jobs p[data-job-id="{cancelled_id}"]')
+                    expect(cancelled_row.get_by_role('button',name='Удалить результат',exact=True)).to_be_visible(timeout=30000)
+                    page.once('dialog',lambda dialog:dialog.accept())
+                    cancelled_row.get_by_role('button',name='Удалить результат',exact=True).click()
+                    expect(page.locator('#job-stage')).to_have_text('Эксперимент удалён',timeout=30000)
+                    assert context.request.get(url+'/api/jobs/'+cancelled_id).status==404
+                    assert context.request.get(url+'/api/jobs/'+job_id).json()['state']=='completed'
+                    checks.append('owner_deletes_cancelled_job_and_preserves_completed_job')
+                    owner_hash=json.loads((target/'.local/gui-jobs'/job_id/'status.json').read_text())['owner']
+                    for index in range(21):
+                        fixture_id=uuid.uuid4().hex;directory=target/'.local/gui-jobs'/fixture_id;directory.mkdir(mode=0o700)
+                        contents={'id':fixture_id,'owner':owner_hash,'state':'failed','stage':'Учебная запись списка',
+                                  'error':'Искусственная метаданная для проверки страниц, не результат обучения.',
+                                  'progress':0,'epochs':2,'created_at':(datetime.now(timezone.utc)-timedelta(days=2,minutes=index)).isoformat()}
+                        (directory/'status.json').write_text(json.dumps(contents))
+                    page.reload();expect(page.locator('#next-jobs')).to_be_visible(timeout=30000)
+                    page.get_by_role('button',name='Более ранние',exact=True).click()
+                    expect(page.locator('#my-jobs p')).to_have_count(2,timeout=30000)
+                    expect(page.locator('#first-jobs')).to_be_visible()
+                    checks.append('older_job_pages_with_21_explicit_metadata_fixtures')
+                    panel=page.get_by_role('heading',name='Мои эксперименты этой браузерной сессии',exact=True).locator('..')
+                    panel.screenshot(path=str(output/'jobs-history-desktop.png'));screens.append('jobs-history-desktop.png')
+                    page.set_viewport_size({'width':390,'height':844})
+                    panel.screenshot(path=str(output/'jobs-history-mobile.png'));screens.append('jobs-history-mobile.png')
+                    assert page.evaluate('document.documentElement.scrollWidth<=document.documentElement.clientWidth+1')
+
                     checks.append('mobile_390_no_document_overflow');assert not errors,errors;checks.append('no_browser_page_errors')
                     browser_version=browser.version;context.close();browser.close()
             finally:
@@ -139,7 +167,7 @@ def verify(app_python, output):
         assert len(source_requests)>=3
     result={'status':'passed','browser':'Chrome '+browser_version,'playwright':version('playwright'),'source_sha256':sources,
         'checks':checks,'screenshots':screens,'viewports':[[1440,1000],[390,844]],'training_epochs_for_smoke':2,
-        'limitations':['Only synthetic data; two smoke epochs do not replace the saved full research experiment.','One browser, not a full accessibility or cross-browser audit.']}
+        'limitations':['Only synthetic data; two smoke epochs do not replace the saved full research experiment.','One browser, not a full accessibility or cross-browser audit.','Pagination uses 21 artificial failed-job metadata records; these are not fabricated model metrics.']}
     (output/'browser.json').write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n');print('Chrome acceptance passed:',len(checks),'checks')
 
 

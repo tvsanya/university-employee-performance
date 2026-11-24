@@ -8,6 +8,7 @@ import shutil
 import threading
 import uuid
 import traceback
+import tempfile
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from datetime import datetime, timezone
@@ -38,10 +39,20 @@ class JobNotFound(LookupError):
     pass
 
 
+def write_json(path, value):
+    path=Path(path);temporary=None
+    try:
+        with tempfile.NamedTemporaryFile(mode='w',encoding='utf-8',dir=path.parent,prefix='.'+path.name+'-',suffix='.tmp',delete=False) as stream:
+            temporary=Path(stream.name)
+            json.dump(value,stream,ensure_ascii=False,indent=2,allow_nan=False)
+            stream.write('\n')
+        temporary.replace(path)
+    finally:
+        if temporary is not None:temporary.unlink(missing_ok=True)
+
+
 def write_state(directory, state):
-    temporary = directory/".status.json.tmp"
-    temporary.write_text(json.dumps(state, ensure_ascii=False, indent=2, allow_nan=False)+"\n", encoding="utf-8")
-    temporary.replace(directory/"status.json")
+    write_json(directory/'status.json',state)
 
 
 def run_job(directory, dataset, config, epochs):
@@ -102,6 +113,8 @@ class TrainingManager:
         self.executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="university-training")
         self.active = None
         self.lease = TrainingLease(self.root.parent/"gui-training.lock")
+        self.marker = self.root.parent/"gui-active.json"
+        self.runner_id = uuid.uuid4().hex
 
     def prepare(self, source, values, epochs=60):
         if type(epochs) is not int or not 1 <= epochs <= 100:
@@ -158,6 +171,7 @@ class TrainingManager:
             if not self.lease.acquire():
                 raise TrainingBusy('Обучение уже выполняется в другом окне или процессе приложения.')
             enqueued = False
+            job_id = None
             try:
                 data, config, preflight = self.prepare(source, values, epochs)
                 job_id = uuid.uuid4().hex
@@ -171,9 +185,10 @@ class TrainingManager:
                     (directory/'input.csv').write_bytes(original)
                     (directory/'preflight.json').write_text(json.dumps(preflight, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
                     (directory/"config.json").write_text(json.dumps(config.as_dict(), ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
-                    state = {"id": job_id, "owner": hashlib.sha256(owner.encode()).hexdigest(), "pid": os.getpid(),
+                    state = {"id": job_id, "owner": hashlib.sha256(owner.encode()).hexdigest(), "pid": os.getpid(), "runner_id": self.runner_id,
                         "state": "queued", "stage": "Ожидает запуска", "progress": 0,
                         "created_at": datetime.now(timezone.utc).isoformat(), "epochs": epochs}
+                    write_json(self.marker,{"job_id":job_id,"runner_id":self.runner_id})
                     write_state(directory, state)
                     self.active = self.executor.submit(self._run, directory, data, config, epochs)
                     enqueued = True
@@ -183,13 +198,34 @@ class TrainingManager:
                 return self.get(job_id, owner)
             finally:
                 if not enqueued:
+                    self._clear_marker(job_id)
                     self.lease.release()
 
     def _run(self, directory, data, config, epochs):
         try:
             run_job(directory, data, config, epochs)
         finally:
+            self._clear_marker(directory.name)
             self.lease.release()
+
+    def _clear_marker(self,job_id):
+        try:
+            marker=json.loads(self.marker.read_text())
+            if marker.get('job_id')==job_id and marker.get('runner_id')==self.runner_id:
+                self.marker.unlink(missing_ok=True)
+        except (OSError,ValueError,AttributeError):
+            pass
+
+    def _runner_alive(self,job_id,state):
+        probe=TrainingLease(self.lease.path)
+        if probe.acquire():
+            probe.release()
+            return False
+        try:
+            marker=json.loads(self.marker.read_text())
+        except (OSError,ValueError):
+            return None
+        return isinstance(marker,dict) and marker.get('job_id')==job_id and marker.get('runner_id')==state['runner_id']
 
     def directory(self, job_id, owner):
         if not isinstance(job_id, str) or len(job_id) != 32 or any(character not in "0123456789abcdef" for character in job_id):
@@ -210,7 +246,13 @@ class TrainingManager:
     def get(self, job_id, owner):
         directory = self.directory(job_id, owner)
         state = json.loads((directory/"status.json").read_text(encoding="utf-8"))
-        if state.get("state") in {"queued", "running"} and state.get("pid") != os.getpid():
+        if state.get('state') in {'queued','running'} and state.get('runner_id'):
+            if self._runner_alive(job_id,state) is False:
+                state.update(state='failed',stage='Запуск прерван',progress=0,
+                    completed_at=datetime.now(timezone.utc).isoformat(),
+                    error='Рабочий процесс завершился до окончания эксперимента. Исходные данные сохранены; создайте новый запуск.')
+                write_state(directory,state)
+        elif state.get("state") in {"queued", "running"} and state.get("pid") != os.getpid():
             try:
                 pid = state.get("pid")
                 if type(pid) is not int or pid <= 0:
@@ -223,7 +265,7 @@ class TrainingManager:
                 pass
         if state.get('state') in {'running', 'queued'} and (directory/'cancel.requested').exists():
             state.update(state='cancelling', stage='Остановка после текущего шага')
-        return {key: value for key, value in state.items() if key not in {"owner", "pid"}}
+        return {key: value for key, value in state.items() if key not in {"owner", "pid", "runner_id"}}
 
     def cancel(self, job_id, owner):
         with self.lock:

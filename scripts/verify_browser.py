@@ -83,6 +83,7 @@ def verify(app_python, output):
                     page.get_by_role('button',name='Проверить настройки',exact=True).click()
                     expect(page.locator('#preflight-result')).to_contain_text('Настройки проверены',timeout=30000)
                     assert 'train: 2100 строк' in page.locator('#preflight-result').inner_text()
+                    assert 'Классы:' in page.locator('#preflight-result').inner_text()
                     assert context.request.get(url+'/api/jobs').json()['jobs']==[]
                     checks.append('contract_and_split_preflight_without_job');shot('preflight-desktop.png','#preflight-result')
                     page.get_by_role('button',name='Начать обучение',exact=True).click()
@@ -146,11 +147,25 @@ def verify(app_python, output):
                                   'error':'Искусственная метаданная для проверки страниц, не результат обучения.',
                                   'progress':0,'epochs':2,'created_at':(datetime.now(timezone.utc)-timedelta(days=2,minutes=index)).isoformat()}
                         (directory/'status.json').write_text(json.dumps(contents))
+                    damaged_id=uuid.uuid4().hex;damaged=target/'.local/gui-jobs'/damaged_id;damaged.mkdir()
+                    (damaged/'status.json').write_text('{broken fixture')
+                    assert context.request.get(url+'/api/jobs/'+damaged_id).status==404
+                    assert (damaged/'status.json').read_text()=='{broken fixture'
+                    checks.append('damaged_metadata_preserved_without_breaking_history')
                     page.reload();expect(page.locator('#next-jobs')).to_be_visible(timeout=30000)
                     page.get_by_role('button',name='Более ранние',exact=True).click()
                     expect(page.locator('#my-jobs p')).to_have_count(2,timeout=30000)
                     expect(page.locator('#first-jobs')).to_be_visible()
                     checks.append('older_job_pages_with_21_explicit_metadata_fixtures')
+                    page.get_by_role('button',name='Проверить место',exact=True).click()
+                    expect(page.locator('#storage-summary')).to_contain_text('Экспериментов: 22',timeout=30000)
+                    assert page.locator('#storage-purge').is_disabled()
+                    page.locator('#storage-confirm').check();page.get_by_role('button',name='Очистить свою корзину',exact=True).click()
+                    expect(page.locator('#storage-summary')).to_contain_text('Удалено каталогов: 0',timeout=30000)
+                    assert not page.locator('#storage-confirm').is_checked()
+                    page.get_by_role('button',name='Проверить место',exact=True).click()
+                    expect(page.locator('#storage-summary')).to_contain_text('Экспериментов: 22',timeout=30000)
+                    checks.append('storage_accounting_and_confirmed_empty_trash_purge')
                     panel=page.get_by_role('heading',name='Мои эксперименты этой браузерной сессии',exact=True).locator('..')
                     panel.screenshot(path=str(output/'jobs-history-desktop.png'));screens.append('jobs-history-desktop.png')
                     page.set_viewport_size({'width':390,'height':844})

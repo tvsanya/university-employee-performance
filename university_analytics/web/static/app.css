@@ -9,3 +9,5 @@
 .workspace>.panel{min-width:0}.panel{overflow-wrap:anywhere}#job-metrics{max-width:100%;overflow-x:auto}@media(max-width:800px){.workspace{grid-template-columns:minmax(0,1fr)}}
 
 #my-jobs p{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+#storage-panel label { display: flex; align-items: flex-start; gap: .6rem; }
+#storage-confirm { width: auto; flex: 0 0 auto; margin-top: .35rem; }

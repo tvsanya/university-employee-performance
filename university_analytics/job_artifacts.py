@@ -2,6 +2,7 @@
 import hashlib
 import io
 import json
+import math
 from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
 from .jobs import JobNotFound
@@ -15,6 +16,43 @@ ARTIFACT_LABELS = {"preflight.json": "Проверка настроек JSON","r
     "comparison.csv": "Сравнение CSV", "history.json": "История нейросети JSON",
     "diagnostics.json": "Ошибки выбранной модели JSON", "training.png": "Обучение нейросети PNG",
     "neural-confusion.png": "Матрица ошибок нейросети PNG", "distribution.json": "Распределения признаков (train/validation)", "importance.json": "Важность признаков (validation)", "probabilities.json": "Вероятности (validation)", "robustness.json": "Устойчивость (validation)", "uncertainty.json": "Групповые интервалы (validation)", "experiment.zip": "Полный эксперимент с данными ZIP"}
+
+
+MAX_ARTIFACT=32*1024*1024
+MAX_ARCHIVE=128*1024*1024
+
+
+def checked_file(directory,path):
+    chain=[path]
+    while chain[-1]!=directory and directory in chain[-1].parents:chain.append(chain[-1].parent)
+    if directory.resolve() not in path.resolve().parents or any(part.is_symlink() for part in chain):
+        raise JobNotReady('Файл результата является ссылкой или выходит за каталог эксперимента.')
+    if not path.is_file():raise JobNotReady('Файл результата отсутствует. Исходный эксперимент сохранён.')
+    with path.open('rb') as stream:payload=stream.read(MAX_ARTIFACT+1)
+    if len(payload)>MAX_ARTIFACT:raise JobNotReady('Файл результата превышает допустимый размер.')
+    return payload
+
+
+def artifact_json(directory,path):
+    def pairs(items):
+        result={}
+        for key,value in items:
+            if key in result:raise ValueError
+            result[key]=value
+        return result
+    def invalid(value):raise ValueError
+    try:
+        value=json.loads(checked_file(directory,path),object_pairs_hook=pairs,parse_constant=invalid)
+        stack=[(value,0)]
+        while stack:
+            item,depth=stack.pop()
+            if depth>64 or (isinstance(item,float) and not math.isfinite(item)):raise ValueError
+            if isinstance(item,dict):stack.extend((v,depth+1) for v in item.values())
+            elif isinstance(item,list):stack.extend((v,depth+1) for v in item)
+        if not isinstance(value,dict):raise ValueError
+        return value
+    except (ValueError,UnicodeError,RecursionError):
+        raise JobNotReady('Повреждён JSON результата. Файлы сохранены; создайте новый эксперимент.') from None
 
 
 def completed_job(manager, job_id, owner):
@@ -47,13 +85,19 @@ def experiment_archive(manager, job_id, owner):
     files = [directory/"input.csv", directory/"config.json", directory/"preflight.json"]
     for folder in ["splits", "baseline", "neural", "comparison", "diagnostics-neural", "diagnostics-selected", "figures", "analysis", "research"]:
         files += sorted((directory/folder).rglob("*"))
+    for required in [directory/'input.csv',directory/'config.json',directory/'comparison/comparison.json']:
+        checked_file(directory,required)
+    if len(files)>512:raise JobNotReady('Слишком много файлов для архива.')
     output, hashes = io.BytesIO(), {}
+    total=0
     with ZipFile(output, "w", compression=ZIP_DEFLATED) as archive:
         for path in files:
             if not path.is_file() or directory.resolve() not in path.resolve().parents:
                 continue
             name = path.relative_to(directory).as_posix()
-            payload = path.read_bytes()
+            payload = checked_file(directory,path)
+            total+=len(payload)
+            if total>MAX_ARCHIVE:raise JobNotReady('Архив превышает допустимый объём.')
             hashes[name] = hashlib.sha256(payload).hexdigest()
             archive.writestr(name, payload)
         requirements = manager.repository/"requirements.txt"

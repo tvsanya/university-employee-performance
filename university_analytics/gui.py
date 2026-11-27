@@ -262,7 +262,10 @@ def create_app(repository=None):
     @app.get("/api/jobs/<job_id>/artifacts")
     def job_artifacts(job_id):
         directory, state = completed_job(manager, job_id, session.get("workspace_id", ""))
-        comparison = json.loads((directory/"comparison/comparison.json").read_text(encoding="utf-8"))
+        from .job_artifacts import artifact_json
+        comparison = artifact_json(directory,directory/'comparison/comparison.json')
+        if not isinstance(comparison.get('entries'),list):
+            raise JobNotReady('Повреждена структура сравнения. Эксперимент сохранён.')
         return jsonify(selected=state["result"], comparison=comparison,
             files=[{"name": name, "label": label} for name, label in ARTIFACT_LABELS.items()
                 if (not name.startswith("research") or state["result"].get("research_status"))

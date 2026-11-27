@@ -49,3 +49,10 @@ class JobStateTests(unittest.TestCase):
         invalid={**self.state,'state':'completed','result':{'selected_family':'neural','selected_model':'neural','data_origin':'synthetic','metrics':{'train':{'accuracy':float('nan'),'macro_f1':1}}}}
         (self.directory/'status.json').write_text(json.dumps(invalid))
         with self.assertRaises(JobNotFound):self.manager.get(self.key,'owner')
+
+    def test_overflow_and_duplicate_fields_fail_without_rewriting_state(self):
+        base=json.dumps(self.state)[:-1]
+        for tail in [',"extra":1e999}',',"progress":10}']:
+            raw=base+tail;(self.directory/'status.json').write_text(raw)
+            with self.assertRaises(JobNotFound):self.manager.get(self.key,'owner')
+            self.assertEqual((self.directory/'status.json').read_text(),raw)

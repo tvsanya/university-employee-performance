@@ -19,11 +19,25 @@ def invalid_constant(value):
     raise ValueError('Non-finite JSON number')
 
 
+def finite_float(text):
+    value=float(text)
+    if not math.isfinite(value):raise ValueError('Non-finite JSON number')
+    return value
+
+
+def unique_object(pairs):
+    result={}
+    for key,value in pairs:
+        if key in result:raise ValueError('Duplicate state field')
+        result[key]=value
+    return result
+
+
 def read_state(path):
     if path.is_symlink() or not path.is_file():raise ValueError('Not a regular state file')
     with path.open('rb') as stream:payload=stream.read(MAX_STATE_BYTES+1)
     if len(payload)>MAX_STATE_BYTES:raise ValueError('State exceeds limit')
-    state=json.loads(payload,parse_constant=invalid_constant)
+    state=json.loads(payload,parse_constant=invalid_constant,parse_float=finite_float,object_pairs_hook=unique_object)
     if not isinstance(state,dict):raise ValueError('State must be an object')
     for name,size in [('id',32),('owner',64)]:
         value=state.get(name)

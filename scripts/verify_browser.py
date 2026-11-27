@@ -99,6 +99,14 @@ def verify(app_python, output):
                     assert 'Диагностика сохранённой модели' in markdown.read_text()
                     checks.append('research_markdown_download')
                     shot('trained-desktop.png','#training-result')
+                    result_root=target/'.local/gui-jobs'/job_id
+                    alias=result_root/'figures/private-alias.txt';alias.symlink_to(result_root/'status.json')
+                    assert context.request.get(url+'/api/jobs/'+job_id+'/download/experiment.zip').status==409
+                    alias.unlink();checks.append('archive_refuses_private_metadata_alias')
+                    figure=result_root/'figures/training.png';held=target/'held-training.png';figure.rename(held)
+                    available=context.request.get(url+'/api/jobs/'+job_id+'/artifacts').json()
+                    assert 'training.png' not in [row['name'] for row in available['files']]
+                    held.rename(figure);checks.append('missing_figure_not_advertised')
                     with page.expect_download() as result:page.get_by_role('link',name='Полный эксперимент с данными ZIP',exact=True).click()
                     archive=target/'experiment.zip';result.value.save_as(archive)
                     with ZipFile(archive) as bundle:

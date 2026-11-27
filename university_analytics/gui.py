@@ -266,10 +266,16 @@ def create_app(repository=None):
         comparison = artifact_json(directory,directory/'comparison/comparison.json')
         if not isinstance(comparison.get('entries'),list):
             raise JobNotReady('Повреждена структура сравнения. Эксперимент сохранён.')
-        return jsonify(selected=state["result"], comparison=comparison,
-            files=[{"name": name, "label": label} for name, label in ARTIFACT_LABELS.items()
-                if (not name.startswith("research") or state["result"].get("research_status"))
-                and (name != "preflight.json" or (directory/name).is_file())])
+        available=[]
+        for name,label in ARTIFACT_LABELS.items():
+            if name=='experiment.zip':
+                if all((directory/part).is_file() for part in ['input.csv','config.json','comparison/comparison.json']):
+                    available.append({'name':name,'label':label})
+                continue
+            try:artifact_path(manager,job_id,session.get('workspace_id',''),name)
+            except (JobNotFound,JobNotReady):continue
+            available.append({'name':name,'label':label})
+        return jsonify(selected=state['result'],comparison=comparison,files=available)
 
     @app.get("/api/jobs/<job_id>/download/<name>")
     def job_download(job_id, name):

@@ -77,6 +77,7 @@ def artifact_path(manager, job_id, owner, name):
     path = directory/mapping[name]
     if not path.is_file() or directory.resolve() not in path.resolve().parents:
         raise JobNotFound
+    checked_file(directory,path)
     return path
 
 

@@ -31,3 +31,11 @@ class ArtifactDamageTests(unittest.TestCase):
             root=Path(folder);path=root/'result.json';path.write_text('{}')
             with patch('university_analytics.job_artifacts.MAX_ARTIFACT',1):
                 with self.assertRaises(JobNotReady):checked_file(root,path)
+
+    def test_direct_download_refuses_internal_alias_to_session_metadata(self):
+        from university_analytics.job_artifacts import artifact_path
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder);(root/'neural').mkdir();(root/'status.json').write_text('private-owner')
+            (root/'neural/model.json').symlink_to(root/'status.json')
+            manager=SimpleNamespace(get=lambda *args:{'state':'completed','result':{'selected_family':'neural'}},directory=lambda *args:root)
+            with self.assertRaises(JobNotReady):artifact_path(manager,'id','owner','model.json')

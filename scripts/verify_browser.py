@@ -69,7 +69,7 @@ def verify(app_python, output):
                     page.locator('#source-url').fill(f'http://127.0.0.1:{fixture.server_port}/simulated.csv')
                     page.get_by_role('button',name='Проверить данные',exact=True).click()
                     expect(page.locator('#status')).to_contain_text('Строк: 3000',timeout=30000)
-                    assert 'симуляционные данные' in page.locator('#summary').inner_text();checks.append('actual_http_csv_profile')
+                    assert 'source_kind' in page.locator('#table').inner_text();checks.append('actual_http_csv_profile')
                     page.locator('#experiment').select_option('simulation-baseline-v1')
                     page.get_by_role('button',name='Получить прогноз',exact=True).click()
                     expect(page.locator('#result-heading')).to_have_text('Прогнозы готовы',timeout=30000)

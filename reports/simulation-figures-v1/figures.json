@@ -3,9 +3,9 @@
   "intended_use": "development_demo_only",
   "best_epoch": 17,
   "files": {
-    "test-confusion.png": "5fbcdbb536dcda0bcdd49810dfa3e4970606d370cf028ac62d84de88f9012b3d",
-    "test-confusion.svg": "debb0e014b93560120c5201db1d4f7b3ff649d9f3faaa1b3e1378381bcf27cc3",
-    "training.png": "5019d08e18aa74a0894ab05d4af3e5eeaad9b42872485400089ad079392fc9a0",
-    "training.svg": "39725db9a3ce01d458fbabe01634550892b2a0a8cfd46955b505e024205d3089"
+    "test-confusion.png": "4c865b392fd7f71615fd34b2987f8818706a8296201df4af75edc043bb69e0b9",
+    "test-confusion.svg": "544f884e7236be3d69bd172caa726f043774f6d1c000ff421ab0e98b2b1bf984",
+    "training.png": "5cd71191a1a8e4b9dd65f29f2a58d7037f2187ad1c9e6037ced3e08f4f134c18",
+    "training.svg": "e508d3826337cd2bfad8d3431457ffd59d9e938fcf0b3567521106af09fc82e7"
   }
 }

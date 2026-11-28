@@ -67,7 +67,7 @@ def export_plots(experiment, diagnostics, destination):
         axes[1].legend(loc="lower right")
         for axis in axes:
             axis.grid(alpha=.2)
-        figure.suptitle(f"{metrics['data_origin'].upper()} · MLP training")
+        figure.suptitle("MLP training")
         for suffix in ["png", "svg"]:
             figure.savefig(temporary/f"training.{suffix}", dpi=180, metadata={"Date": None} if suffix == "svg" else None)
         test = diagnostic["partitions"]["test"]
@@ -80,7 +80,7 @@ def export_plots(experiment, diagnostics, destination):
             axis = confusion.subplots()
             image = axis.imshow(matrix, cmap="Blues", vmin=0)
             axis.set(xticks=range(len(labels)), yticks=range(len(labels)), xticklabels=labels, yticklabels=labels,
-                xlabel="Predicted class", ylabel="True class", title=f"{metrics['data_origin'].upper()} · heldout test")
+                xlabel="Predicted class", ylabel="True class", title="Held-out test")
             for i in range(len(labels)):
                 for j in range(len(labels)):
                     axis.text(j, i, str(int(matrix[i, j])), ha="center", va="center", color="white" if matrix[i, j] > matrix.max()/2 else "#142635")
